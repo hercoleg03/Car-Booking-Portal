@@ -3,13 +3,23 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: API specification for Gestione Prenotazioni Concessionaria
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: vetture
+    description: Gestione vetture (inventario)
+  - name: clienti
+    description: Gestione clienti
+  - name: prenotazioni
+    description: Gestione prenotazioni vetture
+  - name: contratti
+    description: Gestione contratti/documenti
+  - name: dashboard
+    description: Statistiche e riepiloghi
 paths:
   /healthz:
     get:
@@ -24,6 +34,502 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /vetture:
+    get:
+      operationId: listVetture
+      tags: [vetture]
+      summary: Lista vetture
+      parameters:
+        - name: carburante
+          in: query
+          schema:
+            type: ["string", "null"]
+        - name: stato
+          in: query
+          schema:
+            type: ["string", "null"]
+        - name: marca
+          in: query
+          schema:
+            type: ["string", "null"]
+        - name: disponibile
+          in: query
+          schema:
+            type: ["string", "null"]
+      responses:
+        "200":
+          description: Lista vetture
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Vettura"
+    post:
+      operationId: createVettura
+      tags: [vetture]
+      summary: Crea nuova vettura
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateVetturaBody"
+      responses:
+        "201":
+          description: Vettura creata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Vettura"
+
+  /vetture/{id}:
+    get:
+      operationId: getVettura
+      tags: [vetture]
+      summary: Dettaglio vettura
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Vettura
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Vettura"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateVettura
+      tags: [vetture]
+      summary: Aggiorna vettura
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateVetturaBody"
+      responses:
+        "200":
+          description: Vettura aggiornata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Vettura"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteVettura
+      tags: [vetture]
+      summary: Elimina vettura
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Eliminata
+
+  /vetture/{id}/storico:
+    get:
+      operationId: getVetturaStorico
+      tags: [vetture]
+      summary: Storico prenotazioni e contratti di una vettura
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Storico vettura
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VetturaStorico"
+
+  /clienti:
+    get:
+      operationId: listClienti
+      tags: [clienti]
+      summary: Lista clienti
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: ["string", "null"]
+      responses:
+        "200":
+          description: Lista clienti
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Cliente"
+    post:
+      operationId: createCliente
+      tags: [clienti]
+      summary: Crea nuovo cliente
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateClienteBody"
+      responses:
+        "201":
+          description: Cliente creato
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cliente"
+
+  /clienti/{id}:
+    get:
+      operationId: getCliente
+      tags: [clienti]
+      summary: Dettaglio cliente
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Cliente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cliente"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateCliente
+      tags: [clienti]
+      summary: Aggiorna cliente
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateClienteBody"
+      responses:
+        "200":
+          description: Cliente aggiornato
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cliente"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteCliente
+      tags: [clienti]
+      summary: Elimina cliente
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Eliminato
+
+  /clienti/{id}/storico:
+    get:
+      operationId: getClienteStorico
+      tags: [clienti]
+      summary: Storico prenotazioni e contratti di un cliente
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Storico cliente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClienteStorico"
+
+  /prenotazioni:
+    get:
+      operationId: listPrenotazioni
+      tags: [prenotazioni]
+      summary: Lista prenotazioni
+      parameters:
+        - name: vetturaId
+          in: query
+          schema:
+            type: ["integer", "null"]
+        - name: clienteId
+          in: query
+          schema:
+            type: ["integer", "null"]
+        - name: stato
+          in: query
+          schema:
+            type: ["string", "null"]
+        - name: dal
+          in: query
+          schema:
+            type: ["string", "null"]
+        - name: al
+          in: query
+          schema:
+            type: ["string", "null"]
+      responses:
+        "200":
+          description: Lista prenotazioni
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Prenotazione"
+    post:
+      operationId: createPrenotazione
+      tags: [prenotazioni]
+      summary: Crea nuova prenotazione
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePrenotazioneBody"
+      responses:
+        "201":
+          description: Prenotazione creata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Prenotazione"
+
+  /prenotazioni/{id}:
+    get:
+      operationId: getPrenotazione
+      tags: [prenotazioni]
+      summary: Dettaglio prenotazione
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Prenotazione
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Prenotazione"
+        "404":
+          description: Not found
+    patch:
+      operationId: updatePrenotazione
+      tags: [prenotazioni]
+      summary: Aggiorna prenotazione
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePrenotazioneBody"
+      responses:
+        "200":
+          description: Prenotazione aggiornata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Prenotazione"
+        "404":
+          description: Not found
+    delete:
+      operationId: deletePrenotazione
+      tags: [prenotazioni]
+      summary: Elimina prenotazione
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Eliminata
+
+  /contratti:
+    get:
+      operationId: listContratti
+      tags: [contratti]
+      summary: Lista contratti
+      parameters:
+        - name: vetturaId
+          in: query
+          schema:
+            type: ["integer", "null"]
+        - name: clienteId
+          in: query
+          schema:
+            type: ["integer", "null"]
+        - name: archiviato
+          in: query
+          schema:
+            type: ["string", "null"]
+      responses:
+        "200":
+          description: Lista contratti
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Contratto"
+    post:
+      operationId: createContratto
+      tags: [contratti]
+      summary: Crea nuovo contratto
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateContrattoBody"
+      responses:
+        "201":
+          description: Contratto creato
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Contratto"
+
+  /contratti/{id}:
+    get:
+      operationId: getContratto
+      tags: [contratti]
+      summary: Dettaglio contratto
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Contratto
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Contratto"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateContratto
+      tags: [contratti]
+      summary: Aggiorna/archivia contratto
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateContrattoBody"
+      responses:
+        "200":
+          description: Contratto aggiornato
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Contratto"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteContratto
+      tags: [contratti]
+      summary: Elimina contratto
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Eliminato
+
+  /dashboard/stats:
+    get:
+      operationId: getDashboardStats
+      tags: [dashboard]
+      summary: Statistiche generali del portale
+      responses:
+        "200":
+          description: Stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+  /dashboard/prenotazioni-calendario:
+    get:
+      operationId: getPrenotazioniCalendario
+      tags: [dashboard]
+      summary: Prenotazioni formattate per il calendario (per mese)
+      parameters:
+        - name: anno
+          in: query
+          schema:
+            type: ["integer", "null"]
+        - name: mese
+          in: query
+          schema:
+            type: ["integer", "null"]
+      responses:
+        "200":
+          description: Prenotazioni per calendario
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PrenotazioneCalendario"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +540,485 @@ components:
       required:
         - status
 
+    Vettura:
+      type: object
+      properties:
+        id:
+          type: integer
+        marca:
+          type: string
+        modello:
+          type: string
+        anno:
+          type: integer
+        targa:
+          type: string
+        carburante:
+          type: string
+          description: "benzina | diesel | elettrica | ibrida | gpl"
+        stato:
+          type: string
+          description: "nuova | usata | km0"
+        colore:
+          type: ["string", "null"]
+        prezzo:
+          type: ["number", "null"]
+        km:
+          type: ["integer", "null"]
+        disponibile:
+          type: boolean
+        note:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - marca
+        - modello
+        - anno
+        - targa
+        - carburante
+        - stato
+        - disponibile
+        - createdAt
+        - updatedAt
+
+    CreateVetturaBody:
+      type: object
+      properties:
+        marca:
+          type: string
+        modello:
+          type: string
+        anno:
+          type: integer
+        targa:
+          type: string
+        carburante:
+          type: string
+        stato:
+          type: string
+        colore:
+          type: ["string", "null"]
+        prezzo:
+          type: ["number", "null"]
+        km:
+          type: ["integer", "null"]
+        disponibile:
+          type: boolean
+        note:
+          type: ["string", "null"]
+      required:
+        - marca
+        - modello
+        - anno
+        - targa
+        - carburante
+        - stato
+        - disponibile
+
+    UpdateVetturaBody:
+      type: object
+      properties:
+        marca:
+          type: ["string", "null"]
+        modello:
+          type: ["string", "null"]
+        anno:
+          type: ["integer", "null"]
+        targa:
+          type: ["string", "null"]
+        carburante:
+          type: ["string", "null"]
+        stato:
+          type: ["string", "null"]
+        colore:
+          type: ["string", "null"]
+        prezzo:
+          type: ["number", "null"]
+        km:
+          type: ["integer", "null"]
+        disponibile:
+          type: ["boolean", "null"]
+        note:
+          type: ["string", "null"]
+
+    VetturaStorico:
+      type: object
+      properties:
+        vettura:
+          $ref: "#/components/schemas/Vettura"
+        prenotazioni:
+          type: array
+          items:
+            $ref: "#/components/schemas/Prenotazione"
+        contratti:
+          type: array
+          items:
+            $ref: "#/components/schemas/Contratto"
+      required:
+        - vettura
+        - prenotazioni
+        - contratti
+
+    Cliente:
+      type: object
+      properties:
+        id:
+          type: integer
+        nome:
+          type: string
+        cognome:
+          type: string
+        email:
+          type: ["string", "null"]
+        telefono:
+          type: ["string", "null"]
+        codiceFiscale:
+          type: ["string", "null"]
+        indirizzo:
+          type: ["string", "null"]
+        note:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - nome
+        - cognome
+        - createdAt
+        - updatedAt
+
+    CreateClienteBody:
+      type: object
+      properties:
+        nome:
+          type: string
+        cognome:
+          type: string
+        email:
+          type: ["string", "null"]
+        telefono:
+          type: ["string", "null"]
+        codiceFiscale:
+          type: ["string", "null"]
+        indirizzo:
+          type: ["string", "null"]
+        note:
+          type: ["string", "null"]
+      required:
+        - nome
+        - cognome
+
+    UpdateClienteBody:
+      type: object
+      properties:
+        nome:
+          type: ["string", "null"]
+        cognome:
+          type: ["string", "null"]
+        email:
+          type: ["string", "null"]
+        telefono:
+          type: ["string", "null"]
+        codiceFiscale:
+          type: ["string", "null"]
+        indirizzo:
+          type: ["string", "null"]
+        note:
+          type: ["string", "null"]
+
+    ClienteStorico:
+      type: object
+      properties:
+        cliente:
+          $ref: "#/components/schemas/Cliente"
+        prenotazioni:
+          type: array
+          items:
+            $ref: "#/components/schemas/Prenotazione"
+        contratti:
+          type: array
+          items:
+            $ref: "#/components/schemas/Contratto"
+      required:
+        - cliente
+        - prenotazioni
+        - contratti
+
+    Prenotazione:
+      type: object
+      properties:
+        id:
+          type: integer
+        vetturaId:
+          type: integer
+        clienteId:
+          type: integer
+        dataInizio:
+          type: string
+          format: date
+        dataFine:
+          type: string
+          format: date
+        stato:
+          type: string
+          description: "attiva | completata | annullata | in_corso"
+        note:
+          type: ["string", "null"]
+        vettura:
+          $ref: "#/components/schemas/Vettura"
+        cliente:
+          $ref: "#/components/schemas/Cliente"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - vetturaId
+        - clienteId
+        - dataInizio
+        - dataFine
+        - stato
+        - vettura
+        - cliente
+        - createdAt
+        - updatedAt
+
+    CreatePrenotazioneBody:
+      type: object
+      properties:
+        vetturaId:
+          type: integer
+        clienteId:
+          type: integer
+        dataInizio:
+          type: string
+          format: date
+        dataFine:
+          type: string
+          format: date
+        stato:
+          type: string
+        note:
+          type: ["string", "null"]
+      required:
+        - vetturaId
+        - clienteId
+        - dataInizio
+        - dataFine
+        - stato
+
+    UpdatePrenotazioneBody:
+      type: object
+      properties:
+        vetturaId:
+          type: ["integer", "null"]
+        clienteId:
+          type: ["integer", "null"]
+        dataInizio:
+          type: ["string", "null"]
+        dataFine:
+          type: ["string", "null"]
+        stato:
+          type: ["string", "null"]
+        note:
+          type: ["string", "null"]
+
+    Contratto:
+      type: object
+      properties:
+        id:
+          type: integer
+        vetturaId:
+          type: integer
+        clienteId:
+          type: integer
+        prenotazioneId:
+          type: ["integer", "null"]
+        numero:
+          type: string
+        tipo:
+          type: string
+          description: "vendita | noleggio | leasing | permuta"
+        dataContratto:
+          type: string
+          format: date
+        importo:
+          type: ["number", "null"]
+        archiviato:
+          type: boolean
+        note:
+          type: ["string", "null"]
+        vettura:
+          $ref: "#/components/schemas/Vettura"
+        cliente:
+          $ref: "#/components/schemas/Cliente"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - vetturaId
+        - clienteId
+        - numero
+        - tipo
+        - dataContratto
+        - archiviato
+        - vettura
+        - cliente
+        - createdAt
+        - updatedAt
+
+    CreateContrattoBody:
+      type: object
+      properties:
+        vetturaId:
+          type: integer
+        clienteId:
+          type: integer
+        prenotazioneId:
+          type: ["integer", "null"]
+        numero:
+          type: string
+        tipo:
+          type: string
+        dataContratto:
+          type: string
+          format: date
+        importo:
+          type: ["number", "null"]
+        archiviato:
+          type: boolean
+        note:
+          type: ["string", "null"]
+      required:
+        - vetturaId
+        - clienteId
+        - numero
+        - tipo
+        - dataContratto
+        - archiviato
+
+    UpdateContrattoBody:
+      type: object
+      properties:
+        numero:
+          type: ["string", "null"]
+        tipo:
+          type: ["string", "null"]
+        dataContratto:
+          type: ["string", "null"]
+        importo:
+          type: ["number", "null"]
+        archiviato:
+          type: ["boolean", "null"]
+        note:
+          type: ["string", "null"]
+
+    DashboardStats:
+      type: object
+      properties:
+        totaleVetture:
+          type: integer
+        vettureDisponibili:
+          type: integer
+        vetturePrenotate:
+          type: integer
+        totaleClienti:
+          type: integer
+        prenotazioniAttive:
+          type: integer
+        prenotazioniMese:
+          type: integer
+        contrattiTotali:
+          type: integer
+        contrattiArchiviati:
+          type: integer
+        ripartizioneCarburante:
+          type: array
+          items:
+            $ref: "#/components/schemas/CarburanteCount"
+        ripartizioneStato:
+          type: array
+          items:
+            $ref: "#/components/schemas/StatoCount"
+      required:
+        - totaleVetture
+        - vettureDisponibili
+        - vetturePrenotate
+        - totaleClienti
+        - prenotazioniAttive
+        - prenotazioniMese
+        - contrattiTotali
+        - contrattiArchiviati
+        - ripartizioneCarburante
+        - ripartizioneStato
+
+    CarburanteCount:
+      type: object
+      properties:
+        carburante:
+          type: string
+        count:
+          type: integer
+      required:
+        - carburante
+        - count
+
+    StatoCount:
+      type: object
+      properties:
+        stato:
+          type: string
+        count:
+          type: integer
+      required:
+        - stato
+        - count
+
+    PrenotazioneCalendario:
+      type: object
+      properties:
+        id:
+          type: integer
+        vetturaId:
+          type: integer
+        clienteId:
+          type: integer
+        dataInizio:
+          type: string
+        dataFine:
+          type: string
+        stato:
+          type: string
+        vetturaNome:
+          type: string
+        clienteNome:
+          type: string
+        targa:
+          type: string
+      required:
+        - id
+        - vetturaId
+        - clienteId
+        - dataInizio
+        - dataFine
+        - stato
+        - vetturaNome
+        - clienteNome
+        - targa
