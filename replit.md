@@ -18,6 +18,20 @@ pnpm workspace monorepo using TypeScript. This project is a **Portale Gestione P
 - **Build**: esbuild (CJS bundle)
 - **UI**: Tailwind CSS + Shadcn/ui components + React Query
 
+## Authentication
+
+The portal uses server-side session authentication (express-session + SESSION_SECRET env var).
+
+Default credentials:
+- **Username**: `admin`
+- **Password**: `AutoFlotta2025`
+
+Customize credentials via environment variables:
+- `PORTAL_USERNAME` — override default username
+- `PORTAL_PASSWORD` — override default password
+
+Sessions last 8 hours. All API routes (except `/api/auth/*` and `/api/healthz`) are protected.
+
 ## Application Features
 
 - **Inventario Vetture** (`/`) — vehicle inventory with filters (fuel type, condition, brand, availability, plate search). CRUD for vehicles.
