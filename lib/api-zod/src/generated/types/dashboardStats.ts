@@ -17,6 +17,10 @@ export interface DashboardStats {
   prenotazioniMese: number;
   contrattiTotali: number;
   contrattiArchiviati: number;
+  /** @nullable */
+  contrattiAttivi?: number | null;
+  vettureInRientroOggi: number;
+  prenotazioniInizioOggi: number;
   ripartizioneCarburante: CarburanteCount[];
   ripartizioneStato: StatoCount[];
 }

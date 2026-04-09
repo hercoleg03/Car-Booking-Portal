@@ -20,6 +20,8 @@ tags:
     description: Gestione contratti/documenti
   - name: dashboard
     description: Statistiche e riepiloghi
+  - name: manutenzioni
+    description: Gestione manutenzioni veicoli
 paths:
   /healthz:
     get:
@@ -161,6 +163,127 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/VetturaStorico"
+
+  /vetture/{id}/manutenzioni:
+    get:
+      operationId: getVetturaManutenzioni
+      tags: [manutenzioni]
+      summary: Lista manutenzioni di una vettura
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Lista manutenzioni
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Manutenzione"
+
+  /manutenzioni:
+    get:
+      operationId: listManutenzioni
+      tags: [manutenzioni]
+      summary: Lista manutenzioni
+      parameters:
+        - name: vetturaId
+          in: query
+          schema:
+            type: ["integer", "null"]
+        - name: tipo
+          in: query
+          schema:
+            type: ["string", "null"]
+      responses:
+        "200":
+          description: Lista manutenzioni
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Manutenzione"
+    post:
+      operationId: createManutenzione
+      tags: [manutenzioni]
+      summary: Crea nuova manutenzione
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateManutenzioneBody"
+      responses:
+        "201":
+          description: Manutenzione creata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Manutenzione"
+
+  /manutenzioni/{id}:
+    get:
+      operationId: getManutenzione
+      tags: [manutenzioni]
+      summary: Dettaglio manutenzione
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Manutenzione
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Manutenzione"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateManutenzione
+      tags: [manutenzioni]
+      summary: Aggiorna manutenzione
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateManutenzioneBody"
+      responses:
+        "200":
+          description: Manutenzione aggiornata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Manutenzione"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteManutenzione
+      tags: [manutenzioni]
+      summary: Elimina manutenzione
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Eliminata
 
   /clienti:
     get:
@@ -506,6 +629,21 @@ paths:
               schema:
                 $ref: "#/components/schemas/DashboardStats"
 
+  /dashboard/fleet-status:
+    get:
+      operationId: getFleetStatus
+      tags: [dashboard]
+      summary: Stato operativo di ogni veicolo della flotta
+      responses:
+        "200":
+          description: Stato flotta
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FleetStatusItem"
+
   /dashboard/prenotazioni-calendario:
     get:
       operationId: getPrenotazioniCalendario
@@ -569,6 +707,11 @@ components:
           type: boolean
         note:
           type: ["string", "null"]
+        foto:
+          type: array
+          items:
+            type: string
+          nullable: true
         createdAt:
           type: string
           format: date-time
@@ -664,6 +807,87 @@ components:
         - vettura
         - prenotazioni
         - contratti
+
+    Manutenzione:
+      type: object
+      properties:
+        id:
+          type: integer
+        vetturaId:
+          type: integer
+        tipo:
+          type: string
+          description: "tagliando | revisione | riparazione | carrozzeria | altro"
+        data:
+          type: string
+          format: date
+        costo:
+          type: ["number", "null"]
+        descrizione:
+          type: ["string", "null"]
+        prossimaManutenzione:
+          type: ["string", "null"]
+          format: date
+        note:
+          type: ["string", "null"]
+        vettura:
+          $ref: "#/components/schemas/Vettura"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - vetturaId
+        - tipo
+        - data
+        - vettura
+        - createdAt
+        - updatedAt
+
+    CreateManutenzioneBody:
+      type: object
+      properties:
+        vetturaId:
+          type: integer
+        tipo:
+          type: string
+        data:
+          type: string
+          format: date
+        costo:
+          type: ["number", "null"]
+        descrizione:
+          type: ["string", "null"]
+        prossimaManutenzione:
+          type: ["string", "null"]
+          format: date
+        note:
+          type: ["string", "null"]
+      required:
+        - vetturaId
+        - tipo
+        - data
+
+    UpdateManutenzioneBody:
+      type: object
+      properties:
+        vetturaId:
+          type: ["integer", "null"]
+        tipo:
+          type: ["string", "null"]
+        data:
+          type: ["string", "null"]
+        costo:
+          type: ["number", "null"]
+        descrizione:
+          type: ["string", "null"]
+        prossimaManutenzione:
+          type: ["string", "null"]
+        note:
+          type: ["string", "null"]
 
     Cliente:
       type: object
@@ -949,6 +1173,12 @@ components:
           type: integer
         contrattiArchiviati:
           type: integer
+        contrattiAttivi:
+          type: ["integer", "null"]
+        vettureInRientroOggi:
+          type: integer
+        prenotazioniInizioOggi:
+          type: integer
         ripartizioneCarburante:
           type: array
           items:
@@ -966,6 +1196,8 @@ components:
         - prenotazioniMese
         - contrattiTotali
         - contrattiArchiviati
+        - vettureInRientroOggi
+        - prenotazioniInizioOggi
         - ripartizioneCarburante
         - ripartizioneStato
 
@@ -1022,3 +1254,34 @@ components:
         - vetturaNome
         - clienteNome
         - targa
+
+    FleetStatusItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        marca:
+          type: string
+        modello:
+          type: string
+        targa:
+          type: string
+        colore:
+          type: ["string", "null"]
+        statoOperativo:
+          type: string
+          description: "disponibile | prenotata | noleggiata | manutenzione"
+        clienteNome:
+          type: ["string", "null"]
+        dataFine:
+          type: ["string", "null"]
+        dataInizio:
+          type: ["string", "null"]
+        prenotazioneId:
+          type: ["integer", "null"]
+      required:
+        - id
+        - marca
+        - modello
+        - targa
+        - statoOperativo

@@ -1,13 +1,27 @@
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, Car, Calendar, ClipboardList, FileText, Users, History, LogOut, Sun, Moon } from "lucide-react";
+import { LayoutDashboard, Car, Calendar, ClipboardList, FileText, Users, History, Wrench, LogOut, Sun, Moon, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import GlobalSearch from "./global-search";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, []);
 
   const navItems = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, match: ["/", "/dashboard"] },
@@ -17,6 +31,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     { href: "/contratti", label: "Contratti", icon: FileText, match: ["/contratti"] },
     { href: "/clienti", label: "Clienti", icon: Users, match: ["/clienti"] },
     { href: "/storico-vetture", label: "Storico Vetture", icon: History, match: ["/storico-vetture"] },
+    { href: "/manutenzioni", label: "Manutenzioni", icon: Wrench, match: ["/manutenzioni"] },
   ];
 
   const handleLogout = async () => {
@@ -25,8 +40,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
+      <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
+
       <aside className="w-64 bg-sidebar text-sidebar-foreground border-r border-sidebar-border flex flex-col shrink-0 relative">
-        {/* Accent line */}
         <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-gradient-to-b from-indigo-500 via-indigo-400 to-violet-500 z-10" />
 
         {/* Logo + Theme toggle */}
@@ -45,17 +61,25 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               aria-label={theme === "light" ? "Passa a tema scuro" : "Passa a tema chiaro"}
               className="p-1.5 rounded-md opacity-60 hover:opacity-100 hover:bg-sidebar-accent transition-all shrink-0"
             >
-              {theme === "light" ? (
-                <Moon className="w-4 h-4" />
-              ) : (
-                <Sun className="w-4 h-4" />
-              )}
+              {theme === "light" ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
             </button>
           </div>
         </div>
 
+        {/* Search button */}
+        <div className="pl-4 pr-3 pt-3 pb-1">
+          <button
+            onClick={() => setSearchOpen(true)}
+            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs text-muted-foreground bg-sidebar-accent/50 border border-sidebar-border hover:bg-sidebar-accent transition-colors"
+          >
+            <Search className="w-3.5 h-3.5 shrink-0" />
+            <span className="flex-1 text-left">Cerca...</span>
+            <kbd className="text-[10px] bg-background/50 px-1 py-0.5 rounded border border-sidebar-border opacity-60">⌘K</kbd>
+          </button>
+        </div>
+
         {/* Nav */}
-        <nav className="flex-1 pl-4 pr-3 py-3 space-y-0.5 overflow-y-auto">
+        <nav className="flex-1 pl-4 pr-3 py-2 space-y-0.5 overflow-y-auto">
           <div className="px-3 py-2 mb-1">
             <span className="text-[10px] font-semibold opacity-40 tracking-widest uppercase">Menu principale</span>
           </div>
@@ -73,9 +97,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 >
                   <item.icon className={cn("w-4 h-4 flex-shrink-0", isActive ? "text-indigo-500" : "opacity-70")} />
                   <span className="text-sm flex-1">{item.label}</span>
-                  {isActive && (
-                    <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
-                  )}
+                  {isActive && <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />}
                 </div>
               </Link>
             );

@@ -6,6 +6,7 @@ import clientiRouter from "./clienti";
 import prenotazioniRouter from "./prenotazioni";
 import contrattiRouter from "./contratti";
 import dashboardRouter from "./dashboard";
+import manutenzioniRouter from "./manutenzioni";
 
 const router: IRouter = Router();
 
@@ -16,5 +17,6 @@ router.use(clientiRouter);
 router.use(prenotazioniRouter);
 router.use(contrattiRouter);
 router.use(dashboardRouter);
+router.use(manutenzioniRouter);
 
 export default router;

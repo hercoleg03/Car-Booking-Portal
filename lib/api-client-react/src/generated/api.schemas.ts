@@ -28,7 +28,6 @@ export interface Vettura {
   disponibile: boolean;
   /** @nullable */
   note?: string | null;
-  /** @nullable */
   foto?: string[] | null;
   createdAt: string;
   updatedAt: string;
@@ -136,6 +135,56 @@ export interface VetturaStorico {
   vettura: Vettura;
   prenotazioni: Prenotazione[];
   contratti: Contratto[];
+}
+
+export interface Manutenzione {
+  id: number;
+  vetturaId: number;
+  /** tagliando | revisione | riparazione | carrozzeria | altro */
+  tipo: string;
+  data: string;
+  /** @nullable */
+  costo?: number | null;
+  /** @nullable */
+  descrizione?: string | null;
+  /** @nullable */
+  prossimaManutenzione?: string | null;
+  /** @nullable */
+  note?: string | null;
+  vettura: Vettura;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateManutenzioneBody {
+  vetturaId: number;
+  tipo: string;
+  data: string;
+  /** @nullable */
+  costo?: number | null;
+  /** @nullable */
+  descrizione?: string | null;
+  /** @nullable */
+  prossimaManutenzione?: string | null;
+  /** @nullable */
+  note?: string | null;
+}
+
+export interface UpdateManutenzioneBody {
+  /** @nullable */
+  vetturaId?: number | null;
+  /** @nullable */
+  tipo?: string | null;
+  /** @nullable */
+  data?: string | null;
+  /** @nullable */
+  costo?: number | null;
+  /** @nullable */
+  descrizione?: string | null;
+  /** @nullable */
+  prossimaManutenzione?: string | null;
+  /** @nullable */
+  note?: string | null;
 }
 
 export interface CreateClienteBody {
@@ -252,6 +301,8 @@ export interface DashboardStats {
   contrattiArchiviati: number;
   /** @nullable */
   contrattiAttivi?: number | null;
+  vettureInRientroOggi: number;
+  prenotazioniInizioOggi: number;
   ripartizioneCarburante: CarburanteCount[];
   ripartizioneStato: StatoCount[];
 }
@@ -266,6 +317,25 @@ export interface PrenotazioneCalendario {
   vetturaNome: string;
   clienteNome: string;
   targa: string;
+}
+
+export interface FleetStatusItem {
+  id: number;
+  marca: string;
+  modello: string;
+  targa: string;
+  /** @nullable */
+  colore?: string | null;
+  /** disponibile | prenotata | noleggiata | manutenzione */
+  statoOperativo: string;
+  /** @nullable */
+  clienteNome?: string | null;
+  /** @nullable */
+  dataFine?: string | null;
+  /** @nullable */
+  dataInizio?: string | null;
+  /** @nullable */
+  prenotazioneId?: number | null;
 }
 
 export type ListVettureParams = {
@@ -285,6 +355,17 @@ export type ListVettureParams = {
    * @nullable
    */
   disponibile?: string | null;
+};
+
+export type ListManutenzioniParams = {
+  /**
+   * @nullable
+   */
+  vetturaId?: number | null;
+  /**
+   * @nullable
+   */
+  tipo?: string | null;
 };
 
 export type ListClientiParams = {

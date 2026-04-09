@@ -6,26 +6,21 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface Vettura {
+export interface FleetStatusItem {
   id: number;
   marca: string;
   modello: string;
-  anno: number;
   targa: string;
-  /** benzina | diesel | elettrica | ibrida | gpl */
-  carburante: string;
-  /** nuova | usata | km0 */
-  stato: string;
   /** @nullable */
   colore?: string | null;
+  /** disponibile | prenotata | noleggiata | manutenzione */
+  statoOperativo: string;
   /** @nullable */
-  prezzo?: number | null;
+  clienteNome?: string | null;
   /** @nullable */
-  km?: number | null;
-  disponibile: boolean;
+  dataFine?: string | null;
   /** @nullable */
-  note?: string | null;
-  foto?: string[] | null;
-  createdAt: Date;
-  updatedAt: Date;
+  dataInizio?: string | null;
+  /** @nullable */
+  prenotazioneId?: number | null;
 }

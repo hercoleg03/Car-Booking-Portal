@@ -1,5 +1,5 @@
-import { useGetVetturaStorico, useListVetture } from "@workspace/api-client-react";
-import { Car, History, FileText, Calendar, ArrowRight, Images } from "lucide-react";
+import { useGetVetturaStorico, useListVetture, useGetVetturaManutenzioni } from "@workspace/api-client-react";
+import { Car, History, FileText, Calendar, ArrowRight, Images, Wrench, CalendarClock } from "lucide-react";
 import { format } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +15,9 @@ export default function StoricoVetture() {
 
   const { data: vetture, isLoading: isLoadingVetture } = useListVetture();
   const { data: storico, isLoading: isLoadingStorico } = useGetVetturaStorico(selectedVetturaId!, {
+    query: { enabled: !!selectedVetturaId }
+  });
+  const { data: manutenzioni } = useGetVetturaManutenzioni(selectedVetturaId!, {
     query: { enabled: !!selectedVetturaId }
   });
 
@@ -121,6 +124,53 @@ export default function StoricoVetture() {
                 </div>
               </>
             )}
+
+            {/* Manutenzioni */}
+            <Separator />
+            <div>
+              <h3 className="font-semibold text-xl mb-4 flex items-center gap-2 text-foreground">
+                <Wrench className="w-5 h-5 text-indigo-500" /> Manutenzioni
+                <span className="text-sm font-normal text-muted-foreground">({manutenzioni?.length ?? 0})</span>
+              </h3>
+              {!manutenzioni || manutenzioni.length === 0 ? (
+                <p className="text-muted-foreground italic">Nessuna manutenzione registrata.</p>
+              ) : (
+                <div className="space-y-3">
+                  {manutenzioni.map(m => {
+                    const dataStr = m.data;
+                    const prossimaStr = m.prossimaManutenzione ?? null;
+                    return (
+                      <div key={m.id} className="border rounded-lg p-4 bg-muted/10 flex items-start gap-4">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="capitalize font-semibold text-sm">{m.tipo}</span>
+                            {m.costo != null && (
+                              <span className="text-sm font-medium text-muted-foreground">
+                                — € {m.costo.toLocaleString("it-IT", { minimumFractionDigits: 2 })}
+                              </span>
+                            )}
+                          </div>
+                          {m.descrizione && (
+                            <p className="text-sm text-muted-foreground truncate">{m.descrizione}</p>
+                          )}
+                        </div>
+                        <div className="text-right shrink-0">
+                          <div className="text-sm text-muted-foreground">
+                            {dataStr ? format(new Date(dataStr), "dd/MM/yyyy") : "—"}
+                          </div>
+                          {prossimaStr && (
+                            <div className="flex items-center justify-end gap-1 mt-1 text-xs text-amber-600 dark:text-amber-400">
+                              <CalendarClock className="w-3 h-3" />
+                              {format(new Date(prossimaStr), "dd/MM/yyyy")}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
 
             <Separator />
 

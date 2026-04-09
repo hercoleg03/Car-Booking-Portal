@@ -191,6 +191,7 @@ export const GetVetturaStoricoResponse = zod.object({
         km: zod.number().nullish(),
         disponibile: zod.boolean(),
         note: zod.string().nullish(),
+        foto: zod.array(zod.string()).nullish(),
         createdAt: zod.coerce.date(),
         updatedAt: zod.coerce.date(),
       }),
@@ -237,6 +238,7 @@ export const GetVetturaStoricoResponse = zod.object({
         km: zod.number().nullish(),
         disponibile: zod.boolean(),
         note: zod.string().nullish(),
+        foto: zod.array(zod.string()).nullish(),
         createdAt: zod.coerce.date(),
         updatedAt: zod.coerce.date(),
       }),
@@ -256,6 +258,205 @@ export const GetVetturaStoricoResponse = zod.object({
       updatedAt: zod.coerce.date(),
     }),
   ),
+});
+
+/**
+ * @summary Lista manutenzioni di una vettura
+ */
+export const GetVetturaManutenzioniParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetVetturaManutenzioniResponseItem = zod.object({
+  id: zod.number(),
+  vetturaId: zod.number(),
+  tipo: zod
+    .string()
+    .describe("tagliando | revisione | riparazione | carrozzeria | altro"),
+  data: zod.coerce.date(),
+  costo: zod.number().nullish(),
+  descrizione: zod.string().nullish(),
+  prossimaManutenzione: zod.coerce.date().nullish(),
+  note: zod.string().nullish(),
+  vettura: zod.object({
+    id: zod.number(),
+    marca: zod.string(),
+    modello: zod.string(),
+    anno: zod.number(),
+    targa: zod.string(),
+    carburante: zod
+      .string()
+      .describe("benzina | diesel | elettrica | ibrida | gpl"),
+    stato: zod.string().describe("nuova | usata | km0"),
+    colore: zod.string().nullish(),
+    prezzo: zod.number().nullish(),
+    km: zod.number().nullish(),
+    disponibile: zod.boolean(),
+    note: zod.string().nullish(),
+    foto: zod.array(zod.string()).nullish(),
+    createdAt: zod.coerce.date(),
+    updatedAt: zod.coerce.date(),
+  }),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+export const GetVetturaManutenzioniResponse = zod.array(
+  GetVetturaManutenzioniResponseItem,
+);
+
+/**
+ * @summary Lista manutenzioni
+ */
+export const ListManutenzioniQueryParams = zod.object({
+  vetturaId: zod.coerce.number().nullish(),
+  tipo: zod.coerce.string().nullish(),
+});
+
+export const ListManutenzioniResponseItem = zod.object({
+  id: zod.number(),
+  vetturaId: zod.number(),
+  tipo: zod
+    .string()
+    .describe("tagliando | revisione | riparazione | carrozzeria | altro"),
+  data: zod.coerce.date(),
+  costo: zod.number().nullish(),
+  descrizione: zod.string().nullish(),
+  prossimaManutenzione: zod.coerce.date().nullish(),
+  note: zod.string().nullish(),
+  vettura: zod.object({
+    id: zod.number(),
+    marca: zod.string(),
+    modello: zod.string(),
+    anno: zod.number(),
+    targa: zod.string(),
+    carburante: zod
+      .string()
+      .describe("benzina | diesel | elettrica | ibrida | gpl"),
+    stato: zod.string().describe("nuova | usata | km0"),
+    colore: zod.string().nullish(),
+    prezzo: zod.number().nullish(),
+    km: zod.number().nullish(),
+    disponibile: zod.boolean(),
+    note: zod.string().nullish(),
+    foto: zod.array(zod.string()).nullish(),
+    createdAt: zod.coerce.date(),
+    updatedAt: zod.coerce.date(),
+  }),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+export const ListManutenzioniResponse = zod.array(ListManutenzioniResponseItem);
+
+/**
+ * @summary Crea nuova manutenzione
+ */
+export const CreateManutenzioneBody = zod.object({
+  vetturaId: zod.number(),
+  tipo: zod.string(),
+  data: zod.coerce.date(),
+  costo: zod.number().nullish(),
+  descrizione: zod.string().nullish(),
+  prossimaManutenzione: zod.coerce.date().nullish(),
+  note: zod.string().nullish(),
+});
+
+/**
+ * @summary Dettaglio manutenzione
+ */
+export const GetManutenzioneParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetManutenzioneResponse = zod.object({
+  id: zod.number(),
+  vetturaId: zod.number(),
+  tipo: zod
+    .string()
+    .describe("tagliando | revisione | riparazione | carrozzeria | altro"),
+  data: zod.coerce.date(),
+  costo: zod.number().nullish(),
+  descrizione: zod.string().nullish(),
+  prossimaManutenzione: zod.coerce.date().nullish(),
+  note: zod.string().nullish(),
+  vettura: zod.object({
+    id: zod.number(),
+    marca: zod.string(),
+    modello: zod.string(),
+    anno: zod.number(),
+    targa: zod.string(),
+    carburante: zod
+      .string()
+      .describe("benzina | diesel | elettrica | ibrida | gpl"),
+    stato: zod.string().describe("nuova | usata | km0"),
+    colore: zod.string().nullish(),
+    prezzo: zod.number().nullish(),
+    km: zod.number().nullish(),
+    disponibile: zod.boolean(),
+    note: zod.string().nullish(),
+    foto: zod.array(zod.string()).nullish(),
+    createdAt: zod.coerce.date(),
+    updatedAt: zod.coerce.date(),
+  }),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Aggiorna manutenzione
+ */
+export const UpdateManutenzioneParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateManutenzioneBody = zod.object({
+  vetturaId: zod.number().nullish(),
+  tipo: zod.string().nullish(),
+  data: zod.string().nullish(),
+  costo: zod.number().nullish(),
+  descrizione: zod.string().nullish(),
+  prossimaManutenzione: zod.string().nullish(),
+  note: zod.string().nullish(),
+});
+
+export const UpdateManutenzioneResponse = zod.object({
+  id: zod.number(),
+  vetturaId: zod.number(),
+  tipo: zod
+    .string()
+    .describe("tagliando | revisione | riparazione | carrozzeria | altro"),
+  data: zod.coerce.date(),
+  costo: zod.number().nullish(),
+  descrizione: zod.string().nullish(),
+  prossimaManutenzione: zod.coerce.date().nullish(),
+  note: zod.string().nullish(),
+  vettura: zod.object({
+    id: zod.number(),
+    marca: zod.string(),
+    modello: zod.string(),
+    anno: zod.number(),
+    targa: zod.string(),
+    carburante: zod
+      .string()
+      .describe("benzina | diesel | elettrica | ibrida | gpl"),
+    stato: zod.string().describe("nuova | usata | km0"),
+    colore: zod.string().nullish(),
+    prezzo: zod.number().nullish(),
+    km: zod.number().nullish(),
+    disponibile: zod.boolean(),
+    note: zod.string().nullish(),
+    foto: zod.array(zod.string()).nullish(),
+    createdAt: zod.coerce.date(),
+    updatedAt: zod.coerce.date(),
+  }),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Elimina manutenzione
+ */
+export const DeleteManutenzioneParams = zod.object({
+  id: zod.coerce.number(),
 });
 
 /**
@@ -395,6 +596,7 @@ export const GetClienteStoricoResponse = zod.object({
         km: zod.number().nullish(),
         disponibile: zod.boolean(),
         note: zod.string().nullish(),
+        foto: zod.array(zod.string()).nullish(),
         createdAt: zod.coerce.date(),
         updatedAt: zod.coerce.date(),
       }),
@@ -441,6 +643,7 @@ export const GetClienteStoricoResponse = zod.object({
         km: zod.number().nullish(),
         disponibile: zod.boolean(),
         note: zod.string().nullish(),
+        foto: zod.array(zod.string()).nullish(),
         createdAt: zod.coerce.date(),
         updatedAt: zod.coerce.date(),
       }),
@@ -496,6 +699,7 @@ export const ListPrenotazioniResponseItem = zod.object({
     km: zod.number().nullish(),
     disponibile: zod.boolean(),
     note: zod.string().nullish(),
+    foto: zod.array(zod.string()).nullish(),
     createdAt: zod.coerce.date(),
     updatedAt: zod.coerce.date(),
   }),
@@ -558,6 +762,7 @@ export const GetPrenotazioneResponse = zod.object({
     km: zod.number().nullish(),
     disponibile: zod.boolean(),
     note: zod.string().nullish(),
+    foto: zod.array(zod.string()).nullish(),
     createdAt: zod.coerce.date(),
     updatedAt: zod.coerce.date(),
   }),
@@ -616,6 +821,7 @@ export const UpdatePrenotazioneResponse = zod.object({
     km: zod.number().nullish(),
     disponibile: zod.boolean(),
     note: zod.string().nullish(),
+    foto: zod.array(zod.string()).nullish(),
     createdAt: zod.coerce.date(),
     updatedAt: zod.coerce.date(),
   }),
@@ -677,6 +883,7 @@ export const ListContrattiResponseItem = zod.object({
     km: zod.number().nullish(),
     disponibile: zod.boolean(),
     note: zod.string().nullish(),
+    foto: zod.array(zod.string()).nullish(),
     createdAt: zod.coerce.date(),
     updatedAt: zod.coerce.date(),
   }),
@@ -745,6 +952,7 @@ export const GetContrattoResponse = zod.object({
     km: zod.number().nullish(),
     disponibile: zod.boolean(),
     note: zod.string().nullish(),
+    foto: zod.array(zod.string()).nullish(),
     createdAt: zod.coerce.date(),
     updatedAt: zod.coerce.date(),
   }),
@@ -806,6 +1014,7 @@ export const UpdateContrattoResponse = zod.object({
     km: zod.number().nullish(),
     disponibile: zod.boolean(),
     note: zod.string().nullish(),
+    foto: zod.array(zod.string()).nullish(),
     createdAt: zod.coerce.date(),
     updatedAt: zod.coerce.date(),
   }),
@@ -844,7 +1053,9 @@ export const GetDashboardStatsResponse = zod.object({
   prenotazioniMese: zod.number(),
   contrattiTotali: zod.number(),
   contrattiArchiviati: zod.number(),
-  contrattiAttivi: zod.number().optional(),
+  contrattiAttivi: zod.number().nullish(),
+  vettureInRientroOggi: zod.number(),
+  prenotazioniInizioOggi: zod.number(),
   ripartizioneCarburante: zod.array(
     zod.object({
       carburante: zod.string(),
@@ -858,6 +1069,25 @@ export const GetDashboardStatsResponse = zod.object({
     }),
   ),
 });
+
+/**
+ * @summary Stato operativo di ogni veicolo della flotta
+ */
+export const GetFleetStatusResponseItem = zod.object({
+  id: zod.number(),
+  marca: zod.string(),
+  modello: zod.string(),
+  targa: zod.string(),
+  colore: zod.string().nullish(),
+  statoOperativo: zod
+    .string()
+    .describe("disponibile | prenotata | noleggiata | manutenzione"),
+  clienteNome: zod.string().nullish(),
+  dataFine: zod.string().nullish(),
+  dataInizio: zod.string().nullish(),
+  prenotazioneId: zod.number().nullish(),
+});
+export const GetFleetStatusResponse = zod.array(GetFleetStatusResponseItem);
 
 /**
  * @summary Prenotazioni formattate per il calendario (per mese)
