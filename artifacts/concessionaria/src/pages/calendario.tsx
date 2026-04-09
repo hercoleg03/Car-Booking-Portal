@@ -86,16 +86,16 @@ export default function Calendario() {
             <p className="text-sm">Nessuna prenotazione trovata per {format(currentDate, "MMMM yyyy", { locale: it })}.</p>
           </div>
         ) : (
-          <div className="min-w-max" style={{ paddingLeft: "250px" }}>
+          <div className="min-w-max">
             {/* Sticky header giorni */}
             <div className="flex border-b sticky top-0 bg-muted/80 backdrop-blur z-20 h-10">
-              <div className="w-[250px] bg-card border-r border-b px-4 flex items-center font-medium text-xs text-muted-foreground absolute left-0 top-0 h-10 z-30">
+              <div className="w-[250px] shrink-0 bg-card border-r px-4 flex items-center font-medium text-xs text-muted-foreground sticky left-0 z-30">
                 Vettura
               </div>
               {daysInMonth.map((day, i) => (
                 <div
                   key={i}
-                  className={`flex-1 min-w-[40px] border-r flex items-center justify-center text-xs font-medium ${
+                  className={`w-[40px] shrink-0 border-r flex items-center justify-center text-xs font-medium ${
                     isSameDay(day, new Date()) ? 'bg-foreground/8 text-foreground font-bold' : 'text-muted-foreground'
                   }`}
                 >
@@ -106,17 +106,17 @@ export default function Calendario() {
 
             {/* Righe vetture */}
             {Array.from(vettureMap.entries()).map(([vetturaId, data]) => (
-              <div key={vetturaId} className="flex border-b group relative h-14 hover:bg-muted/30 transition-colors">
-                <div className="w-[250px] bg-card border-r px-4 py-2 absolute left-0 flex flex-col justify-center z-10">
+              <div key={vetturaId} className="flex border-b group h-14 hover:bg-muted/30 transition-colors">
+                <div className="w-[250px] shrink-0 bg-card border-r px-4 py-2 flex flex-col justify-center sticky left-0 z-10">
                   <div className="font-semibold text-sm truncate">{data.nome}</div>
                   <div className="text-xs text-muted-foreground font-mono">{data.targa}</div>
                 </div>
                 
-                <div className="flex flex-1 relative">
+                <div className="flex relative" style={{ width: `${daysInMonth.length * 40}px` }}>
                   {daysInMonth.map((day, i) => (
                     <div
                       key={i}
-                      className={`flex-1 min-w-[40px] border-r ${
+                      className={`w-[40px] shrink-0 border-r ${
                         isSameDay(day, new Date()) ? 'bg-foreground/5' : ''
                       }`}
                     />
@@ -125,14 +125,22 @@ export default function Calendario() {
                   {data.prenotazioni.map((p) => {
                     const start = parseISO(p.dataInizio);
                     const end = parseISO(p.dataFine);
-                    
-                    const startIdx = daysInMonth.findIndex(d => isSameDay(d, start) || (d > start && isSameDay(d, startOfMonth(currentDate))));
-                    const endIdx = daysInMonth.findIndex(d => isSameDay(d, end) || (d < end && isSameDay(d, endOfMonth(currentDate))));
-                    
-                    if (startIdx === -1 && endIdx === -1) return null;
 
-                    const actualStartIdx = startIdx === -1 ? 0 : startIdx;
-                    const actualEndIdx = endIdx === -1 ? daysInMonth.length - 1 : endIdx;
+                    const monthStart = startOfMonth(currentDate);
+                    const monthEnd = endOfMonth(currentDate);
+
+                    // Skip bookings entirely outside this month
+                    if (end < monthStart || start > monthEnd) return null;
+
+                    // Clamp to month boundaries
+                    const clampedStart = start < monthStart ? monthStart : start;
+                    const clampedEnd = end > monthEnd ? monthEnd : end;
+
+                    const actualStartIdx = daysInMonth.findIndex(d => isSameDay(d, clampedStart));
+                    const actualEndIdx = daysInMonth.findIndex(d => isSameDay(d, clampedEnd));
+
+                    if (actualStartIdx === -1 || actualEndIdx === -1) return null;
+
                     const span = actualEndIdx - actualStartIdx + 1;
 
                     return (
@@ -141,8 +149,8 @@ export default function Calendario() {
                           <div 
                             className={`absolute top-2 bottom-2 rounded border shadow-sm flex items-center px-2 truncate text-xs font-medium cursor-pointer transition-transform hover:-translate-y-0.5 hover:shadow-md ${getStatusColor(p.stato)}`}
                             style={{ 
-                              left: `calc((100% / ${daysInMonth.length}) * ${actualStartIdx} + 2px)`, 
-                              width: `calc((100% / ${daysInMonth.length}) * ${span} - 4px)`
+                              left: `${actualStartIdx * 40 + 2}px`, 
+                              width: `${span * 40 - 4}px`
                             }}
                           >
                             {span > 1 && <span className="truncate">{p.clienteNome}</span>}
