@@ -38,10 +38,11 @@ Sessions last 8 hours. All API routes (except `/api/auth/*` and `/api/healthz`) 
 - **Calendario** (`/calendario`) — monthly/weekly calendar with colored booking bars per vehicle. Color-coded by status (attiva=green, in_corso=blue, completata=grey, annullata=red).
 - **Prenotazioni** (`/prenotazioni`) — booking list with status filters, create/edit bookings with full pricing system (daily rate × days + extra km + deposit - discount = total, live preview), rientro tracking (actual return date, km, damage notes).
 - **Clienti** (`/clienti`) — client directory with automatic reliability label (Affidabile/Da monitorare/Problematico), full profile sheet with KPI stats (total rentals, delays, damages, total spent), rental history, contracts/payment status, editable notes.
-- **Contratti** (`/contratti`) — contract archive with status management.
+- **Contratti** (`/contratti`) — contract archive with status management. Types: vendita/noleggio/leasing/permuta.
 - **Manutenzioni** (`/manutenzioni`) — vehicle maintenance log.
 - **Dashboard** (`/dashboard`) — KPI overview, fleet status board, today's activity alerts.
 - **Storico Vetture** (`/storico-vetture`) — per-vehicle history with photo gallery and maintenance log.
+- **Report** (`/report`) — advanced statistics and charts: monthly revenue bar chart (last 12 months), contract distribution pie chart by type, top-5 vehicles by contracts, and KPI cards (total revenue, contract count, average amount).
 
 ## Database Tables
 
@@ -68,5 +69,6 @@ All routes under `/api`:
 - `/api/contratti` — CRUD contratti
 - `/api/dashboard/stats` — dashboard statistics
 - `/api/dashboard/prenotazioni-calendario` — calendar bookings by month
+- `/api/dashboard/report` — advanced report: monthly revenue, top vehicles, contract type distribution, KPI totals
 
 See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details.

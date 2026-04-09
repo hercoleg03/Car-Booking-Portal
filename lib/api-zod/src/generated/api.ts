@@ -1424,3 +1424,35 @@ export const GetPrenotazioniCalendarioResponseItem = zod.object({
 export const GetPrenotazioniCalendarioResponse = zod.array(
   GetPrenotazioniCalendarioResponseItem,
 );
+
+/**
+ * @summary Report e statistiche avanzate
+ */
+export const GetDashboardReportResponse = zod.object({
+  fatturatoMensile: zod.array(
+    zod.object({
+      mese: zod.string(),
+      fatturato: zod.number(),
+    }),
+  ),
+  topVeicoli: zod.array(
+    zod.object({
+      vetturaId: zod.number(),
+      marca: zod.string(),
+      modello: zod.string(),
+      targa: zod.string(),
+      count: zod.number(),
+    }),
+  ),
+  distribuzioneTipo: zod.array(
+    zod.object({
+      tipo: zod.string(),
+      count: zod.number(),
+    }),
+  ),
+  kpi: zod.object({
+    totale_fatturato: zod.number(),
+    numero_contratti: zod.number(),
+    media_importo: zod.number(),
+  }),
+});

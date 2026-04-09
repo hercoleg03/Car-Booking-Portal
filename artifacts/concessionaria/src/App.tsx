@@ -18,6 +18,7 @@ import Clienti from "@/pages/clienti";
 import StoricoVetture from "@/pages/storico-vetture";
 import Manutenzioni from "@/pages/manutenzioni";
 import Timeline from "@/pages/timeline";
+import Report from "@/pages/report";
 
 const queryClient = new QueryClient();
 
@@ -52,6 +53,7 @@ function AuthGate() {
         <Route path="/storico-vetture" component={StoricoVetture} />
         <Route path="/manutenzioni" component={Manutenzioni} />
         <Route path="/timeline" component={Timeline} />
+        <Route path="/report" component={Report} />
         <Route component={NotFound} />
       </Switch>
     </Layout>

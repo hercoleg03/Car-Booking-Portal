@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, Car, Calendar, ClipboardList, FileText, Users, History, Wrench, LogOut, Sun, Moon, Search, GanttChart } from "lucide-react";
+import { LayoutDashboard, Car, Calendar, ClipboardList, FileText, Users, History, Wrench, LogOut, Sun, Moon, Search, GanttChart, BarChart2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -33,6 +33,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     { href: "/storico-vetture", label: "Storico Vetture", icon: History, match: ["/storico-vetture"] },
     { href: "/manutenzioni", label: "Manutenzioni", icon: Wrench, match: ["/manutenzioni"] },
     { href: "/timeline", label: "Timeline Flotta", icon: GanttChart, match: ["/timeline"] },
+    { href: "/report", label: "Report", icon: BarChart2, match: ["/report"] },
   ];
 
   const handleLogout = async () => {

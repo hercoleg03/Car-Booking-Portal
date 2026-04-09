@@ -26,6 +26,7 @@ import type {
   CreateManutenzioneBody,
   CreatePrenotazioneBody,
   CreateVetturaBody,
+  DashboardReport,
   DashboardStats,
   FleetStatusItem,
   GetPrenotazioniCalendarioParams,
@@ -3017,6 +3018,81 @@ export function useGetPrenotazioniCalendario<
     params,
     options,
   );
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Report e statistiche avanzate
+ */
+export const getGetDashboardReportUrl = () => {
+  return `/api/dashboard/report`;
+};
+
+export const getDashboardReport = async (
+  options?: RequestInit,
+): Promise<DashboardReport> => {
+  return customFetch<DashboardReport>(getGetDashboardReportUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetDashboardReportQueryKey = () => {
+  return [`/api/dashboard/report`] as const;
+};
+
+export const getGetDashboardReportQueryOptions = <
+  TData = Awaited<ReturnType<typeof getDashboardReport>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getDashboardReport>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetDashboardReportQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getDashboardReport>>
+  > = ({ signal }) => getDashboardReport({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getDashboardReport>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetDashboardReportQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getDashboardReport>>
+>;
+export type GetDashboardReportQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Report e statistiche avanzate
+ */
+
+export function useGetDashboardReport<
+  TData = Awaited<ReturnType<typeof getDashboardReport>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getDashboardReport>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetDashboardReportQueryOptions(options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;

@@ -712,6 +712,19 @@ paths:
                 items:
                   $ref: "#/components/schemas/PrenotazioneCalendario"
 
+  /dashboard/report:
+    get:
+      operationId: getDashboardReport
+      tags: [dashboard]
+      summary: Report e statistiche avanzate
+      responses:
+        "200":
+          description: Report dati
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardReport"
+
 components:
   schemas:
     HealthStatus:
@@ -1463,3 +1476,70 @@ components:
         - stats
         - prenotazioni
         - contratti
+
+    DashboardReport:
+      type: object
+      properties:
+        fatturatoMensile:
+          type: array
+          items:
+            type: object
+            properties:
+              mese:
+                type: string
+              fatturato:
+                type: number
+            required:
+              - mese
+              - fatturato
+        topVeicoli:
+          type: array
+          items:
+            type: object
+            properties:
+              vetturaId:
+                type: integer
+              marca:
+                type: string
+              modello:
+                type: string
+              targa:
+                type: string
+              count:
+                type: integer
+            required:
+              - vetturaId
+              - marca
+              - modello
+              - targa
+              - count
+        distribuzioneTipo:
+          type: array
+          items:
+            type: object
+            properties:
+              tipo:
+                type: string
+              count:
+                type: integer
+            required:
+              - tipo
+              - count
+        kpi:
+          type: object
+          properties:
+            totale_fatturato:
+              type: number
+            numero_contratti:
+              type: integer
+            media_importo:
+              type: number
+          required:
+            - totale_fatturato
+            - numero_contratti
+            - media_importo
+      required:
+        - fatturatoMensile
+        - topVeicoli
+        - distribuzioneTipo
+        - kpi

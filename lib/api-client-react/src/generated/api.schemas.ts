@@ -439,6 +439,37 @@ export interface ClienteProfilo {
   contratti: Contratto[];
 }
 
+export type DashboardReportFatturatoMensileItem = {
+  mese: string;
+  fatturato: number;
+};
+
+export type DashboardReportTopVeicoliItem = {
+  vetturaId: number;
+  marca: string;
+  modello: string;
+  targa: string;
+  count: number;
+};
+
+export type DashboardReportDistribuzioneTipoItem = {
+  tipo: string;
+  count: number;
+};
+
+export type DashboardReportKpi = {
+  totale_fatturato: number;
+  numero_contratti: number;
+  media_importo: number;
+};
+
+export interface DashboardReport {
+  fatturatoMensile: DashboardReportFatturatoMensileItem[];
+  topVeicoli: DashboardReportTopVeicoliItem[];
+  distribuzioneTipo: DashboardReportDistribuzioneTipoItem[];
+  kpi: DashboardReportKpi;
+}
+
 export type ListVettureParams = {
   /**
    * @nullable

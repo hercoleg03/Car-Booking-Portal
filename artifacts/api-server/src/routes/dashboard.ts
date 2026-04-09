@@ -1,11 +1,12 @@
 import { Router, type IRouter } from "express";
-import { eq, count, and, gte, lte, or, inArray } from "drizzle-orm";
+import { eq, count, and, gte, lte, or, inArray, sum, avg, desc } from "drizzle-orm";
 import { db, vettureTable, clientiTable, prenotazioniTable, contrattiTable, manutenzioniTable } from "@workspace/db";
 import {
   GetDashboardStatsResponse,
   GetPrenotazioniCalendarioQueryParams,
   GetPrenotazioniCalendarioResponse,
   GetFleetStatusResponse,
+  GetDashboardReportResponse,
 } from "@workspace/api-zod";
 
 const router: IRouter = Router();
@@ -186,11 +187,10 @@ router.get("/dashboard/fleet-status", async (_req, res): Promise<void> => {
       marca: v.marca,
       modello: v.modello,
       targa: v.targa,
-      colore: v.colore ?? null,
       statoOperativo,
       clienteNome,
-      dataFine,
       dataInizio,
+      dataFine,
       prenotazioneId,
     };
   });
@@ -251,6 +251,90 @@ router.get("/dashboard/prenotazioni-calendario", async (req, res): Promise<void>
       targa: p.targa ?? "",
     }))
   ));
+});
+
+router.get("/dashboard/report", async (_req, res): Promise<void> => {
+  const now = new Date();
+
+  // Last 12 months
+  const months: { label: string; start: string; end: string }[] = [];
+  for (let i = 11; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const year = d.getFullYear();
+    const month = d.getMonth() + 1;
+    const lastDay = new Date(year, month, 0).getDate();
+    months.push({
+      label: `${year}-${String(month).padStart(2, "0")}`,
+      start: `${year}-${String(month).padStart(2, "0")}-01`,
+      end: `${year}-${String(month).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`,
+    });
+  }
+
+  // Fatturato mensile ultimi 12 mesi
+  const fatturatoMensile = await Promise.all(
+    months.map(async ({ label, start, end }) => {
+      const [row] = await db
+        .select({ fatturato: sum(contrattiTable.importo) })
+        .from(contrattiTable)
+        .where(and(gte(contrattiTable.dataContratto, start), lte(contrattiTable.dataContratto, end)));
+      return { mese: label, fatturato: Number(row?.fatturato ?? 0) };
+    })
+  );
+
+  // Top 5 veicoli per numero contratti
+  const topVeicoliRaw = await db
+    .select({
+      vetturaId: contrattiTable.vetturaId,
+      count: count(),
+      marca: vettureTable.marca,
+      modello: vettureTable.modello,
+      targa: vettureTable.targa,
+    })
+    .from(contrattiTable)
+    .leftJoin(vettureTable, eq(contrattiTable.vetturaId, vettureTable.id))
+    .groupBy(contrattiTable.vetturaId, vettureTable.marca, vettureTable.modello, vettureTable.targa)
+    .orderBy(desc(count()))
+    .limit(5);
+
+  const topVeicoli = topVeicoliRaw
+    .sort((a, b) => b.count - a.count)
+    .map((r) => ({
+      vetturaId: r.vetturaId,
+      marca: r.marca ?? "",
+      modello: r.modello ?? "",
+      targa: r.targa ?? "",
+      count: r.count,
+    }));
+
+  // Distribuzione per tipo
+  const distribuzioneTipoRaw = await db
+    .select({ tipo: contrattiTable.tipo, count: count() })
+    .from(contrattiTable)
+    .groupBy(contrattiTable.tipo);
+
+  const distribuzioneTipo = distribuzioneTipoRaw.map((r) => ({ tipo: r.tipo, count: r.count }));
+
+  // KPI totali
+  const [kpiRow] = await db
+    .select({
+      totale_fatturato: sum(contrattiTable.importo),
+      numero_contratti: count(),
+      media_importo: avg(contrattiTable.importo),
+    })
+    .from(contrattiTable);
+
+  const kpi = {
+    totale_fatturato: Number(kpiRow?.totale_fatturato ?? 0),
+    numero_contratti: Number(kpiRow?.numero_contratti ?? 0),
+    media_importo: Number(kpiRow?.media_importo ?? 0),
+  };
+
+  res.json(GetDashboardReportResponse.parse({
+    fatturatoMensile,
+    topVeicoli,
+    distribuzioneTipo,
+    kpi,
+  }));
 });
 
 export default router;
