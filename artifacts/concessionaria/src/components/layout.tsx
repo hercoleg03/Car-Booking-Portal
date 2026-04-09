@@ -1,11 +1,13 @@
 import { Link, useLocation } from "wouter";
-import { Car, Calendar, ClipboardList, FileText, Users, History, LogOut, ChevronRight } from "lucide-react";
+import { Car, Calendar, ClipboardList, FileText, Users, History, LogOut, ChevronRight, Sun, Moon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTheme } from "@/contexts/ThemeContext";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
 
   const navItems = [
     { href: "/inventario", label: "Inventario", icon: Car, match: ["/", "/inventario"] },
@@ -21,19 +23,30 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="flex min-h-screen bg-background">
-      <aside className="w-64 bg-sidebar text-sidebar-foreground border-r border-sidebar-border flex flex-col">
-        {/* Logo */}
+    <div className="flex h-screen bg-background overflow-hidden">
+      <aside className="w-64 bg-sidebar text-sidebar-foreground border-r border-sidebar-border flex flex-col shrink-0">
+        {/* Logo + Theme toggle */}
         <div className="p-5 border-b border-sidebar-border">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
-              style={{ background: "#e63946" }}>
-              <Car className="w-5 h-5 text-white" />
+            <div className="w-9 h-9 rounded-lg bg-sidebar-primary flex items-center justify-center flex-shrink-0">
+              <Car className="w-5 h-5 text-sidebar-primary-foreground" />
             </div>
-            <div>
-              <div className="text-sm font-black tracking-tight text-white">AutoFlotta</div>
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-black tracking-tight">AutoFlotta</div>
               <div className="text-[10px] font-medium opacity-40 tracking-widest uppercase">Concessionaria</div>
             </div>
+            <button
+              onClick={toggleTheme}
+              title={theme === "light" ? "Passa a tema scuro" : "Passa a tema chiaro"}
+              aria-label={theme === "light" ? "Passa a tema scuro" : "Passa a tema chiaro"}
+              className="p-1.5 rounded-md opacity-60 hover:opacity-100 hover:bg-sidebar-accent transition-all shrink-0"
+            >
+              {theme === "light" ? (
+                <Moon className="w-4 h-4" />
+              ) : (
+                <Sun className="w-4 h-4" />
+              )}
+            </button>
           </div>
         </div>
 
@@ -50,7 +63,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   className={cn(
                     "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all cursor-pointer group",
                     isActive
-                      ? "bg-primary text-primary-foreground font-semibold shadow-sm"
+                      ? "bg-sidebar-primary text-sidebar-primary-foreground font-semibold"
                       : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                   )}
                 >
@@ -65,14 +78,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
         {/* User + Logout */}
         <div className="p-3 border-t border-sidebar-border">
-          <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg"
-            style={{ background: "rgba(255,255,255,0.04)" }}>
-            <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold text-white"
-              style={{ background: "#e63946" }}>
+          <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-sidebar-accent/50">
+            <div className="w-8 h-8 rounded-full bg-sidebar-primary flex items-center justify-center flex-shrink-0 text-xs font-bold text-sidebar-primary-foreground">
               {user?.username?.charAt(0).toUpperCase() ?? "A"}
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-xs font-semibold text-white truncate">{user?.username ?? "Utente"}</div>
+              <div className="text-xs font-semibold truncate">{user?.username ?? "Utente"}</div>
               <div className="text-[10px] opacity-40">Amministratore</div>
             </div>
             <button
@@ -86,7 +97,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      <main className="flex-1 overflow-auto flex flex-col">
+      <main className="flex-1 overflow-auto flex flex-col min-h-0">
         {children}
       </main>
     </div>
