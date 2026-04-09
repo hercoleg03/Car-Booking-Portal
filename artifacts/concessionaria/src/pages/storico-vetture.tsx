@@ -1,24 +1,38 @@
-import { useGetVetturaStorico, useListVetture, useGetVetturaManutenzioni } from "@workspace/api-client-react";
+import { useGetVetturaStorico, useListVetture, useGetVetturaManutenzioni, getGetVetturaStoricoQueryKey, getGetVetturaManutenzioniQueryKey } from "@workspace/api-client-react";
 import { Car, History, FileText, Calendar, ArrowRight, Images, Wrench, CalendarClock } from "lucide-react";
 import { format } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { getApiBaseUrl } from "@/lib/api-base";
+import { useSearch } from "wouter";
 
 export default function StoricoVetture() {
-  const [selectedVetturaId, setSelectedVetturaId] = useState<number | null>(null);
+  const searchStr = useSearch();
+  const params = new URLSearchParams(searchStr);
+  const rawId = params.get("vetturaId");
+  const parsedId = rawId ? Number(rawId) : NaN;
+  const preselectedId = Number.isFinite(parsedId) && parsedId > 0 ? parsedId : null;
+
+  const [selectedVetturaId, setSelectedVetturaId] = useState<number | null>(preselectedId);
   const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    if (preselectedId) {
+      setSelectedVetturaId(preselectedId);
+    }
+  }, [preselectedId]);
+
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   const { data: vetture, isLoading: isLoadingVetture } = useListVetture();
   const { data: storico, isLoading: isLoadingStorico } = useGetVetturaStorico(selectedVetturaId!, {
-    query: { enabled: !!selectedVetturaId }
+    query: { enabled: !!selectedVetturaId, queryKey: selectedVetturaId ? getGetVetturaStoricoQueryKey(selectedVetturaId) : [] }
   });
   const { data: manutenzioni } = useGetVetturaManutenzioni(selectedVetturaId!, {
-    query: { enabled: !!selectedVetturaId }
+    query: { enabled: !!selectedVetturaId, queryKey: selectedVetturaId ? getGetVetturaManutenzioniQueryKey(selectedVetturaId) : [] }
   });
 
   const filteredVetture = vetture?.filter(v =>

@@ -1,16 +1,17 @@
 import { useState, useRef, useCallback } from "react";
-import { useListVetture, useCreateVettura, getListVettureQueryKey } from "@workspace/api-client-react";
+import { useListVetture, useCreateVettura, useUpdateVettura, getListVettureQueryKey, GetVetturaQueryResult } from "@workspace/api-client-react";
 import { Plus, Search, Car as CarIcon, CheckCircle2, XCircle, MoreVertical, Upload, X, Image as ImageIcon } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useLocation } from "wouter";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -127,8 +128,12 @@ export default function Inventario() {
   const [createdVetturaId, setCreatedVetturaId] = useState<number | null>(null);
   const [step, setStep] = useState<"form" | "photos">("form");
 
+  const [editingVettura, setEditingVettura] = useState<GetVetturaQueryResult | null>(null);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const [, navigate] = useLocation();
 
   const params = {
     ...(carburante !== "all" && { carburante }),
@@ -139,8 +144,26 @@ export default function Inventario() {
 
   const { data: vetture, isLoading } = useListVetture(params);
   const createVettura = useCreateVettura();
+  const updateVettura = useUpdateVettura();
 
   const form = useForm<VetturaFormValues>({
+    resolver: zodResolver(vetturaSchema),
+    defaultValues: {
+      marca: "",
+      modello: "",
+      anno: new Date().getFullYear(),
+      targa: "",
+      carburante: "benzina",
+      stato: "nuova",
+      colore: "",
+      prezzo: 0,
+      km: 0,
+      disponibile: true,
+      note: "",
+    },
+  });
+
+  const editForm = useForm<VetturaFormValues>({
     resolver: zodResolver(vetturaSchema),
     defaultValues: {
       marca: "",
@@ -246,6 +269,43 @@ export default function Inventario() {
     setIsAddOpen(open);
   }
 
+  function openEdit(v: NonNullable<typeof vetture>[number]) {
+    setEditingVettura(v);
+    editForm.reset({
+      marca: v.marca,
+      modello: v.modello,
+      anno: v.anno,
+      targa: v.targa,
+      carburante: v.carburante as VetturaFormValues["carburante"],
+      stato: v.stato as VetturaFormValues["stato"],
+      colore: v.colore ?? "",
+      prezzo: v.prezzo ?? 0,
+      km: v.km ?? 0,
+      disponibile: v.disponibile,
+      note: v.note ?? "",
+    });
+    setIsEditOpen(true);
+  }
+
+  function onEditSubmit(data: VetturaFormValues) {
+    if (!editingVettura) return;
+    updateVettura.mutate({ id: editingVettura.id, data }, {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: getListVettureQueryKey() });
+        setIsEditOpen(false);
+        setEditingVettura(null);
+        toast({ title: "Vettura aggiornata con successo" });
+      },
+      onError: () => {
+        toast({ title: "Errore durante la modifica", variant: "destructive" });
+      }
+    });
+  }
+
+  function navigateToStorico(vetturaId: number) {
+    navigate(`/storico-vetture?vetturaId=${vetturaId}`);
+  }
+
   const apiBase = getApiBaseUrl();
 
   return (
@@ -268,11 +328,11 @@ export default function Inventario() {
               <DialogTitle>
                 {step === "form" ? "Aggiungi Nuova Vettura" : "Carica Foto Vettura"}
               </DialogTitle>
-              {step === "photos" && (
-                <p className="text-sm text-muted-foreground">
-                  Vettura creata. Ora puoi caricare fino a 5 foto oppure saltare questo passaggio.
-                </p>
-              )}
+              <DialogDescription>
+                {step === "form"
+                  ? "Compila i dati della nuova vettura da aggiungere all'inventario."
+                  : "Vettura creata. Ora puoi caricare fino a 5 foto oppure saltare questo passaggio."}
+              </DialogDescription>
             </DialogHeader>
 
             {step === "form" ? (
@@ -528,8 +588,8 @@ export default function Inventario() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem>Modifica</DropdownMenuItem>
-                          <DropdownMenuItem>Vedi Storico</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => openEdit(v)}>Modifica</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => navigateToStorico(v.id)}>Vedi Storico</DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -540,6 +600,97 @@ export default function Inventario() {
           </TableBody>
         </Table>
       </div>
+
+      {/* Edit Dialog */}
+      <Dialog open={isEditOpen} onOpenChange={(open) => { if (!open) { setIsEditOpen(false); setEditingVettura(null); } }}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Modifica Vettura</DialogTitle>
+            <DialogDescription>
+              Aggiorna i dati della vettura {editingVettura?.marca} {editingVettura?.modello} ({editingVettura?.targa}).
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...editForm}>
+            <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <FormField control={editForm.control} name="marca" render={({ field }) => (
+                  <FormItem><FormLabel>Marca</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+                <FormField control={editForm.control} name="modello" render={({ field }) => (
+                  <FormItem><FormLabel>Modello</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+                <FormField control={editForm.control} name="targa" render={({ field }) => (
+                  <FormItem><FormLabel>Targa</FormLabel><FormControl><Input {...field} className="uppercase" /></FormControl><FormMessage /></FormItem>
+                )} />
+                <FormField control={editForm.control} name="anno" render={({ field }) => (
+                  <FormItem><FormLabel>Anno</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+                <FormField control={editForm.control} name="carburante" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Carburante</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl><SelectTrigger><SelectValue placeholder="Seleziona" /></SelectTrigger></FormControl>
+                      <SelectContent>
+                        <SelectItem value="benzina">Benzina</SelectItem>
+                        <SelectItem value="diesel">Diesel</SelectItem>
+                        <SelectItem value="elettrica">Elettrica</SelectItem>
+                        <SelectItem value="ibrida">Ibrida</SelectItem>
+                        <SelectItem value="gpl">GPL</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={editForm.control} name="stato" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Stato</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl><SelectTrigger><SelectValue placeholder="Seleziona" /></SelectTrigger></FormControl>
+                      <SelectContent>
+                        <SelectItem value="nuova">Nuova</SelectItem>
+                        <SelectItem value="usata">Usata</SelectItem>
+                        <SelectItem value="km0">Km 0</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={editForm.control} name="km" render={({ field }) => (
+                  <FormItem><FormLabel>Chilometraggio</FormLabel><FormControl><Input type="number" {...field} value={field.value || ""} /></FormControl><FormMessage /></FormItem>
+                )} />
+                <FormField control={editForm.control} name="prezzo" render={({ field }) => (
+                  <FormItem><FormLabel>Prezzo (€)</FormLabel><FormControl><Input type="number" {...field} value={field.value || ""} /></FormControl><FormMessage /></FormItem>
+                )} />
+                <FormField control={editForm.control} name="colore" render={({ field }) => (
+                  <FormItem><FormLabel>Colore</FormLabel><FormControl><Input {...field} value={field.value || ""} /></FormControl><FormMessage /></FormItem>
+                )} />
+                <FormField control={editForm.control} name="disponibile" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Disponibilità</FormLabel>
+                    <Select onValueChange={(v) => field.onChange(v === "true")} value={field.value ? "true" : "false"}>
+                      <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                      <SelectContent>
+                        <SelectItem value="true">Disponibile</SelectItem>
+                        <SelectItem value="false">Non Disponibile</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+              </div>
+              <FormField control={editForm.control} name="note" render={({ field }) => (
+                <FormItem><FormLabel>Note</FormLabel><FormControl><Input {...field} value={field.value || ""} /></FormControl><FormMessage /></FormItem>
+              )} />
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => { setIsEditOpen(false); setEditingVettura(null); }}>Annulla</Button>
+                <Button type="submit" disabled={updateVettura.isPending} className="bg-indigo-600 hover:bg-indigo-700 text-white">
+                  {updateVettura.isPending ? "Salvataggio..." : "Salva Modifiche"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

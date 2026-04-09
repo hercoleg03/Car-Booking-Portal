@@ -21,11 +21,11 @@ import { it } from "date-fns/locale";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
@@ -119,7 +119,10 @@ export default function Clienti() {
             <Button className="gap-2"><Plus className="h-4 w-4" /> Nuovo Cliente</Button>
           </DialogTrigger>
           <DialogContent className="max-w-md">
-            <DialogHeader><DialogTitle>Aggiungi Cliente</DialogTitle></DialogHeader>
+            <DialogHeader>
+              <DialogTitle>Aggiungi Cliente</DialogTitle>
+              <DialogDescription>Compila i dati anagrafici per registrare un nuovo cliente.</DialogDescription>
+            </DialogHeader>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
@@ -276,6 +279,10 @@ function ClienteProfiloSheet({ id, onClose }: { id: number | null; onClose: () =
   return (
     <Sheet open={!!id} onOpenChange={open => !open && onClose()}>
       <SheetContent className="w-[680px] sm:max-w-none overflow-y-auto p-0">
+        <SheetHeader className="sr-only">
+          <SheetTitle>Profilo Cliente</SheetTitle>
+          <SheetDescription>Dettagli, storico noleggi e contratti del cliente selezionato.</SheetDescription>
+        </SheetHeader>
         {isLoading || !profilo ? (
           <div className="p-8 space-y-4">
             <Skeleton className="h-10 w-1/2" />
