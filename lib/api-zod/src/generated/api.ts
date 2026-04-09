@@ -40,6 +40,7 @@ export const ListVettureResponseItem = zod.object({
   km: zod.number().nullish(),
   disponibile: zod.boolean(),
   note: zod.string().nullish(),
+  foto: zod.array(zod.string()).nullish(),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
 });
@@ -84,6 +85,7 @@ export const GetVetturaResponse = zod.object({
   km: zod.number().nullish(),
   disponibile: zod.boolean(),
   note: zod.string().nullish(),
+  foto: zod.array(zod.string()).nullish(),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
 });
@@ -124,6 +126,7 @@ export const UpdateVetturaResponse = zod.object({
   km: zod.number().nullish(),
   disponibile: zod.boolean(),
   note: zod.string().nullish(),
+  foto: zod.array(zod.string()).nullish(),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
 });
@@ -158,6 +161,7 @@ export const GetVetturaStoricoResponse = zod.object({
     km: zod.number().nullish(),
     disponibile: zod.boolean(),
     note: zod.string().nullish(),
+    foto: zod.array(zod.string()).nullish(),
     createdAt: zod.coerce.date(),
     updatedAt: zod.coerce.date(),
   }),
@@ -840,6 +844,7 @@ export const GetDashboardStatsResponse = zod.object({
   prenotazioniMese: zod.number(),
   contrattiTotali: zod.number(),
   contrattiArchiviati: zod.number(),
+  contrattiAttivi: zod.number().optional(),
   ripartizioneCarburante: zod.array(
     zod.object({
       carburante: zod.string(),

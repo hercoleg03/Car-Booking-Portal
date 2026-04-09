@@ -5,6 +5,8 @@ import session from "express-session";
 import router from "./routes";
 import { logger } from "./lib/logger";
 import "./session.d";
+import path from "path";
+import fs from "fs";
 
 const app: Express = express();
 
@@ -62,6 +64,10 @@ const requireAuth = (req: Request, res: Response, next: NextFunction): void => {
 
   next();
 };
+
+const uploadsDir = path.join(process.cwd(), "uploads");
+fs.mkdirSync(uploadsDir, { recursive: true });
+app.use("/api/uploads", express.static(uploadsDir));
 
 app.use("/api", requireAuth, router);
 

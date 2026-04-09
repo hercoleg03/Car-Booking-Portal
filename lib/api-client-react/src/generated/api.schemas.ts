@@ -28,6 +28,8 @@ export interface Vettura {
   disponibile: boolean;
   /** @nullable */
   note?: string | null;
+  /** @nullable */
+  foto?: string[] | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -248,6 +250,8 @@ export interface DashboardStats {
   prenotazioniMese: number;
   contrattiTotali: number;
   contrattiArchiviati: number;
+  /** @nullable */
+  contrattiAttivi?: number | null;
   ripartizioneCarburante: CarburanteCount[];
   ripartizioneStato: StatoCount[];
 }

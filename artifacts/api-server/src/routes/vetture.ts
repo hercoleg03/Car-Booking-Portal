@@ -14,6 +14,28 @@ import {
   GetVetturaStoricoParams,
   GetVetturaStoricoResponse,
 } from "@workspace/api-zod";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
+
+const uploadsDir = path.join(process.cwd(), "uploads", "vetture");
+fs.mkdirSync(uploadsDir, { recursive: true });
+
+const storage = multer.diskStorage({
+  destination: (_req, _file, cb) => cb(null, uploadsDir),
+  filename: (_req, file, cb) => {
+    const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+    cb(null, `${unique}${path.extname(file.originalname)}`);
+  },
+});
+const upload = multer({
+  storage,
+  limits: { files: 5, fileSize: 10 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    if (file.mimetype.startsWith("image/")) cb(null, true);
+    else cb(new Error("Solo file immagine sono ammessi"));
+  },
+});
 
 const router: IRouter = Router();
 
@@ -257,6 +279,77 @@ router.get("/vetture/:id/storico", async (req, res): Promise<void> => {
       cliente: c.cliente,
     })),
   }));
+});
+
+router.post("/vetture/:id/foto", upload.array("foto", 5), async (req, res): Promise<void> => {
+  const params = GetVetturaParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  const [vettura] = await db.select().from(vettureTable).where(eq(vettureTable.id, params.data.id));
+  if (!vettura) {
+    res.status(404).json({ error: "Vettura non trovata" });
+    return;
+  }
+
+  const files = req.files as Express.Multer.File[];
+  if (!files || files.length === 0) {
+    res.status(400).json({ error: "Nessun file caricato" });
+    return;
+  }
+
+  const nuoveFoto = files.map(f => `/api/uploads/vetture/${f.filename}`);
+  const fotoPrecedenti = (vettura.foto as string[]) ?? [];
+  const fotoAggiornate = [...fotoPrecedenti, ...nuoveFoto];
+
+  const [updated] = await db
+    .update(vettureTable)
+    .set({ foto: fotoAggiornate })
+    .where(eq(vettureTable.id, params.data.id))
+    .returning();
+
+  res.json({
+    foto: updated.foto,
+    message: `${files.length} foto caricate con successo`,
+  });
+});
+
+router.delete("/vetture/:id/foto/:index", async (req, res): Promise<void> => {
+  const params = GetVetturaParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  const index = parseInt(req.params.index, 10);
+  if (isNaN(index) || index < 0) {
+    res.status(400).json({ error: "Indice foto non valido" });
+    return;
+  }
+
+  const [vettura] = await db.select().from(vettureTable).where(eq(vettureTable.id, params.data.id));
+  if (!vettura) {
+    res.status(404).json({ error: "Vettura non trovata" });
+    return;
+  }
+
+  const foto = (vettura.foto as string[]) ?? [];
+  if (index >= foto.length) {
+    res.status(400).json({ error: "Indice foto fuori range" });
+    return;
+  }
+
+  const fotoUrl = foto[index];
+  const filename = path.basename(fotoUrl);
+  const filePath = path.join(uploadsDir, filename);
+  try { fs.unlinkSync(filePath); } catch { /* ignore if not found */ }
+
+  const nuoveFoto = foto.filter((_, i) => i !== index);
+  await db.update(vettureTable).set({ foto: nuoveFoto }).where(eq(vettureTable.id, params.data.id));
+
+  res.json({ foto: nuoveFoto });
 });
 
 export default router;

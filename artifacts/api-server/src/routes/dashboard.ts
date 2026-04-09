@@ -17,6 +17,7 @@ router.get("/dashboard/stats", async (_req, res): Promise<void> => {
   const [vetturePrenotate] = await db.select({ count: count() }).from(prenotazioniTable).where(eq(prenotazioniTable.stato, "in_corso"));
   const [contrattiTotali] = await db.select({ count: count() }).from(contrattiTable);
   const [contrattiArchiviati] = await db.select({ count: count() }).from(contrattiTable).where(eq(contrattiTable.archiviato, true));
+  const [contrattiAttivi] = await db.select({ count: count() }).from(contrattiTable).where(eq(contrattiTable.archiviato, false));
 
   const now = new Date();
   const primoMese = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
@@ -48,6 +49,7 @@ router.get("/dashboard/stats", async (_req, res): Promise<void> => {
     prenotazioniMese: prenotazioniMese.count,
     contrattiTotali: contrattiTotali.count,
     contrattiArchiviati: contrattiArchiviati.count,
+    contrattiAttivi: contrattiAttivi.count,
     ripartizioneCarburante: carburanteRows.map(r => ({ carburante: r.carburante, count: r.count })),
     ripartizioneStato: statoRows.map(r => ({ stato: r.stato, count: r.count })),
   }));

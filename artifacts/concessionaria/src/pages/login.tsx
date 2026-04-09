@@ -94,7 +94,8 @@ export default function Login() {
 
           <div className="mb-8">
             <h1 className="text-3xl font-black text-foreground mb-1">Accedi</h1>
-            <p className="text-muted-foreground text-sm">Inserisci le tue credenziali per continuare</p>
+            <p className="text-muted-foreground text-sm">Portale di gestione AutoFlotta — inserisci le tue credenziali per continuare</p>
+            <div className="mt-4 h-px bg-gradient-to-r from-indigo-500/40 via-violet-500/30 to-transparent" />
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">

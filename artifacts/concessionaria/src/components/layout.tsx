@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Car, Calendar, ClipboardList, FileText, Users, History, LogOut, ChevronRight, Sun, Moon } from "lucide-react";
+import { LayoutDashboard, Car, Calendar, ClipboardList, FileText, Users, History, LogOut, Sun, Moon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -10,7 +10,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const { theme, toggleTheme } = useTheme();
 
   const navItems = [
-    { href: "/inventario", label: "Inventario", icon: Car, match: ["/", "/inventario"] },
+    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, match: ["/", "/dashboard"] },
+    { href: "/inventario", label: "Inventario", icon: Car, match: ["/inventario"] },
     { href: "/calendario", label: "Calendario", icon: Calendar, match: ["/calendario"] },
     { href: "/prenotazioni", label: "Prenotazioni", icon: ClipboardList, match: ["/prenotazioni"] },
     { href: "/contratti", label: "Contratti", icon: FileText, match: ["/contratti"] },
@@ -24,12 +25,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
-      <aside className="w-64 bg-sidebar text-sidebar-foreground border-r border-sidebar-border flex flex-col shrink-0">
+      <aside className="w-64 bg-sidebar text-sidebar-foreground border-r border-sidebar-border flex flex-col shrink-0 relative">
+        {/* Accent line */}
+        <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-gradient-to-b from-indigo-500 via-indigo-400 to-violet-500 z-10" />
+
         {/* Logo + Theme toggle */}
-        <div className="p-5 border-b border-sidebar-border">
+        <div className="pl-4 pr-5 py-5 border-b border-sidebar-border">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-sidebar-primary flex items-center justify-center flex-shrink-0">
-              <Car className="w-5 h-5 text-sidebar-primary-foreground" />
+            <div className="w-9 h-9 rounded-lg bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center flex-shrink-0">
+              <Car className="w-5 h-5 text-indigo-500" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="text-sm font-black tracking-tight">AutoFlotta</div>
@@ -51,7 +55,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
+        <nav className="flex-1 pl-4 pr-3 py-3 space-y-0.5 overflow-y-auto">
           <div className="px-3 py-2 mb-1">
             <span className="text-[10px] font-semibold opacity-40 tracking-widest uppercase">Menu principale</span>
           </div>
@@ -63,13 +67,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   className={cn(
                     "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all cursor-pointer group",
                     isActive
-                      ? "bg-sidebar-primary text-sidebar-primary-foreground font-semibold"
-                      : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                      ? "bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 font-semibold border border-indigo-500/20"
+                      : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground border border-transparent"
                   )}
                 >
-                  <item.icon className={cn("w-4 h-4 flex-shrink-0", isActive ? "" : "opacity-70")} />
+                  <item.icon className={cn("w-4 h-4 flex-shrink-0", isActive ? "text-indigo-500" : "opacity-70")} />
                   <span className="text-sm flex-1">{item.label}</span>
-                  {isActive && <ChevronRight className="w-3.5 h-3.5 opacity-60" />}
+                  {isActive && (
+                    <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                  )}
                 </div>
               </Link>
             );
@@ -77,9 +83,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </nav>
 
         {/* User + Logout */}
-        <div className="p-3 border-t border-sidebar-border">
+        <div className="pl-4 pr-3 py-3 border-t border-sidebar-border">
           <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-sidebar-accent/50">
-            <div className="w-8 h-8 rounded-full bg-sidebar-primary flex items-center justify-center flex-shrink-0 text-xs font-bold text-sidebar-primary-foreground">
+            <div className="w-8 h-8 rounded-full bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center flex-shrink-0 text-xs font-bold text-indigo-700 dark:text-indigo-300">
               {user?.username?.charAt(0).toUpperCase() ?? "A"}
             </div>
             <div className="flex-1 min-w-0">

@@ -9,6 +9,7 @@ import Layout from "@/components/layout";
 import Login from "@/pages/login";
 
 // Pages
+import Dashboard from "@/pages/dashboard";
 import Inventario from "@/pages/inventario";
 import Calendario from "@/pages/calendario";
 import Prenotazioni from "@/pages/prenotazioni";
@@ -39,7 +40,8 @@ function AuthGate() {
   return (
     <Layout>
       <Switch>
-        <Route path="/" component={Inventario} />
+        <Route path="/" component={Dashboard} />
+        <Route path="/dashboard" component={Dashboard} />
         <Route path="/inventario" component={Inventario} />
         <Route path="/calendario" component={Calendario} />
         <Route path="/prenotazioni" component={Prenotazioni} />
