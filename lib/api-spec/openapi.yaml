@@ -400,6 +400,50 @@ paths:
               schema:
                 $ref: "#/components/schemas/ClienteStorico"
 
+  /clienti/{id}/profilo:
+    get:
+      operationId: getClienteProfilo
+      tags: [clienti]
+      summary: Profilo completo cliente con statistiche, etichetta e storico dettagliato
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Profilo cliente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClienteProfilo"
+
+  /clienti/{id}/etichetta:
+    patch:
+      operationId: updateClienteEtichetta
+      tags: [clienti]
+      summary: Imposta manualmente l'etichetta di un cliente
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateClienteEtichettaBody"
+      responses:
+        "200":
+          description: Etichetta aggiornata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cliente"
+
   /prenotazioni:
     get:
       operationId: listPrenotazioni
@@ -908,6 +952,9 @@ components:
           type: ["string", "null"]
         note:
           type: ["string", "null"]
+        etichetta:
+          type: ["string", "null"]
+          description: "affidabile | da_monitorare | problematico"
         createdAt:
           type: string
           format: date-time
@@ -938,6 +985,8 @@ components:
           type: ["string", "null"]
         note:
           type: ["string", "null"]
+        etichetta:
+          type: ["string", "null"]
       required:
         - nome
         - cognome
@@ -958,6 +1007,8 @@ components:
         indirizzo:
           type: ["string", "null"]
         note:
+          type: ["string", "null"]
+        etichetta:
           type: ["string", "null"]
 
     ClienteStorico:
@@ -998,6 +1049,27 @@ components:
           description: "attiva | completata | annullata | in_corso"
         note:
           type: ["string", "null"]
+        dataRientroEffettiva:
+          type: ["string", "null"]
+          format: date
+        kmPartenza:
+          type: ["integer", "null"]
+        kmRientro:
+          type: ["integer", "null"]
+        danni:
+          type: ["string", "null"]
+        prezzoGiornaliero:
+          type: ["number", "null"]
+        kmInclusi:
+          type: ["integer", "null"]
+        costoExtraKm:
+          type: ["number", "null"]
+        cauzione:
+          type: ["number", "null"]
+        sconto:
+          type: ["number", "null"]
+        prezzoTotale:
+          type: ["number", "null"]
         vettura:
           $ref: "#/components/schemas/Vettura"
         cliente:
@@ -1037,6 +1109,26 @@ components:
           type: string
         note:
           type: ["string", "null"]
+        dataRientroEffettiva:
+          type: ["string", "null"]
+        kmPartenza:
+          type: ["integer", "null"]
+        kmRientro:
+          type: ["integer", "null"]
+        danni:
+          type: ["string", "null"]
+        prezzoGiornaliero:
+          type: ["number", "null"]
+        kmInclusi:
+          type: ["integer", "null"]
+        costoExtraKm:
+          type: ["number", "null"]
+        cauzione:
+          type: ["number", "null"]
+        sconto:
+          type: ["number", "null"]
+        prezzoTotale:
+          type: ["number", "null"]
       required:
         - vetturaId
         - clienteId
@@ -1059,6 +1151,26 @@ components:
           type: ["string", "null"]
         note:
           type: ["string", "null"]
+        dataRientroEffettiva:
+          type: ["string", "null"]
+        kmPartenza:
+          type: ["integer", "null"]
+        kmRientro:
+          type: ["integer", "null"]
+        danni:
+          type: ["string", "null"]
+        prezzoGiornaliero:
+          type: ["number", "null"]
+        kmInclusi:
+          type: ["integer", "null"]
+        costoExtraKm:
+          type: ["number", "null"]
+        cauzione:
+          type: ["number", "null"]
+        sconto:
+          type: ["number", "null"]
+        prezzoTotale:
+          type: ["number", "null"]
 
     Contratto:
       type: object
@@ -1285,3 +1397,69 @@ components:
         - modello
         - targa
         - statoOperativo
+
+    UpdateClienteEtichettaBody:
+      type: object
+      properties:
+        etichetta:
+          type: ["string", "null"]
+          description: "affidabile | da_monitorare | problematico | null (reset automatico)"
+      required:
+        - etichetta
+
+    ClienteProfiloStats:
+      type: object
+      properties:
+        totalePrenotazioni:
+          type: integer
+        completate:
+          type: integer
+        annullate:
+          type: integer
+        inCorso:
+          type: integer
+        attive:
+          type: integer
+        ritardi:
+          type: integer
+        danniSegnalati:
+          type: integer
+        totaleSpeso:
+          type: number
+        mediaGiorni:
+          type: number
+        suggerimentoEtichetta:
+          type: ["string", "null"]
+          description: "affidabile | da_monitorare | problematico"
+      required:
+        - totalePrenotazioni
+        - completate
+        - annullate
+        - inCorso
+        - attive
+        - ritardi
+        - danniSegnalati
+        - totaleSpeso
+        - mediaGiorni
+        - suggerimentoEtichetta
+
+    ClienteProfilo:
+      type: object
+      properties:
+        cliente:
+          $ref: "#/components/schemas/Cliente"
+        stats:
+          $ref: "#/components/schemas/ClienteProfiloStats"
+        prenotazioni:
+          type: array
+          items:
+            $ref: "#/components/schemas/Prenotazione"
+        contratti:
+          type: array
+          items:
+            $ref: "#/components/schemas/Contratto"
+      required:
+        - cliente
+        - stats
+        - prenotazioni
+        - contratti

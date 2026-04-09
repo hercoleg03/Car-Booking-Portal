@@ -176,6 +176,16 @@ export const GetVetturaStoricoResponse = zod.object({
         .string()
         .describe("attiva | completata | annullata | in_corso"),
       note: zod.string().nullish(),
+      dataRientroEffettiva: zod.coerce.date().nullish(),
+      kmPartenza: zod.number().nullish(),
+      kmRientro: zod.number().nullish(),
+      danni: zod.string().nullish(),
+      prezzoGiornaliero: zod.number().nullish(),
+      kmInclusi: zod.number().nullish(),
+      costoExtraKm: zod.number().nullish(),
+      cauzione: zod.number().nullish(),
+      sconto: zod.number().nullish(),
+      prezzoTotale: zod.number().nullish(),
       vettura: zod.object({
         id: zod.number(),
         marca: zod.string(),
@@ -204,6 +214,10 @@ export const GetVetturaStoricoResponse = zod.object({
         codiceFiscale: zod.string().nullish(),
         indirizzo: zod.string().nullish(),
         note: zod.string().nullish(),
+        etichetta: zod
+          .string()
+          .nullish()
+          .describe("affidabile | da_monitorare | problematico"),
         createdAt: zod.coerce.date(),
         updatedAt: zod.coerce.date(),
       }),
@@ -251,6 +265,10 @@ export const GetVetturaStoricoResponse = zod.object({
         codiceFiscale: zod.string().nullish(),
         indirizzo: zod.string().nullish(),
         note: zod.string().nullish(),
+        etichetta: zod
+          .string()
+          .nullish()
+          .describe("affidabile | da_monitorare | problematico"),
         createdAt: zod.coerce.date(),
         updatedAt: zod.coerce.date(),
       }),
@@ -475,6 +493,10 @@ export const ListClientiResponseItem = zod.object({
   codiceFiscale: zod.string().nullish(),
   indirizzo: zod.string().nullish(),
   note: zod.string().nullish(),
+  etichetta: zod
+    .string()
+    .nullish()
+    .describe("affidabile | da_monitorare | problematico"),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
 });
@@ -491,6 +513,7 @@ export const CreateClienteBody = zod.object({
   codiceFiscale: zod.string().nullish(),
   indirizzo: zod.string().nullish(),
   note: zod.string().nullish(),
+  etichetta: zod.string().nullish(),
 });
 
 /**
@@ -509,6 +532,10 @@ export const GetClienteResponse = zod.object({
   codiceFiscale: zod.string().nullish(),
   indirizzo: zod.string().nullish(),
   note: zod.string().nullish(),
+  etichetta: zod
+    .string()
+    .nullish()
+    .describe("affidabile | da_monitorare | problematico"),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
 });
@@ -528,6 +555,7 @@ export const UpdateClienteBody = zod.object({
   codiceFiscale: zod.string().nullish(),
   indirizzo: zod.string().nullish(),
   note: zod.string().nullish(),
+  etichetta: zod.string().nullish(),
 });
 
 export const UpdateClienteResponse = zod.object({
@@ -539,6 +567,10 @@ export const UpdateClienteResponse = zod.object({
   codiceFiscale: zod.string().nullish(),
   indirizzo: zod.string().nullish(),
   note: zod.string().nullish(),
+  etichetta: zod
+    .string()
+    .nullish()
+    .describe("affidabile | da_monitorare | problematico"),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
 });
@@ -567,6 +599,10 @@ export const GetClienteStoricoResponse = zod.object({
     codiceFiscale: zod.string().nullish(),
     indirizzo: zod.string().nullish(),
     note: zod.string().nullish(),
+    etichetta: zod
+      .string()
+      .nullish()
+      .describe("affidabile | da_monitorare | problematico"),
     createdAt: zod.coerce.date(),
     updatedAt: zod.coerce.date(),
   }),
@@ -581,6 +617,16 @@ export const GetClienteStoricoResponse = zod.object({
         .string()
         .describe("attiva | completata | annullata | in_corso"),
       note: zod.string().nullish(),
+      dataRientroEffettiva: zod.coerce.date().nullish(),
+      kmPartenza: zod.number().nullish(),
+      kmRientro: zod.number().nullish(),
+      danni: zod.string().nullish(),
+      prezzoGiornaliero: zod.number().nullish(),
+      kmInclusi: zod.number().nullish(),
+      costoExtraKm: zod.number().nullish(),
+      cauzione: zod.number().nullish(),
+      sconto: zod.number().nullish(),
+      prezzoTotale: zod.number().nullish(),
       vettura: zod.object({
         id: zod.number(),
         marca: zod.string(),
@@ -609,6 +655,10 @@ export const GetClienteStoricoResponse = zod.object({
         codiceFiscale: zod.string().nullish(),
         indirizzo: zod.string().nullish(),
         note: zod.string().nullish(),
+        etichetta: zod
+          .string()
+          .nullish()
+          .describe("affidabile | da_monitorare | problematico"),
         createdAt: zod.coerce.date(),
         updatedAt: zod.coerce.date(),
       }),
@@ -656,6 +706,10 @@ export const GetClienteStoricoResponse = zod.object({
         codiceFiscale: zod.string().nullish(),
         indirizzo: zod.string().nullish(),
         note: zod.string().nullish(),
+        etichetta: zod
+          .string()
+          .nullish()
+          .describe("affidabile | da_monitorare | problematico"),
         createdAt: zod.coerce.date(),
         updatedAt: zod.coerce.date(),
       }),
@@ -663,6 +717,191 @@ export const GetClienteStoricoResponse = zod.object({
       updatedAt: zod.coerce.date(),
     }),
   ),
+});
+
+/**
+ * @summary Profilo completo cliente con statistiche, etichetta e storico dettagliato
+ */
+export const GetClienteProfiloParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetClienteProfiloResponse = zod.object({
+  cliente: zod.object({
+    id: zod.number(),
+    nome: zod.string(),
+    cognome: zod.string(),
+    email: zod.string().nullish(),
+    telefono: zod.string().nullish(),
+    codiceFiscale: zod.string().nullish(),
+    indirizzo: zod.string().nullish(),
+    note: zod.string().nullish(),
+    etichetta: zod
+      .string()
+      .nullish()
+      .describe("affidabile | da_monitorare | problematico"),
+    createdAt: zod.coerce.date(),
+    updatedAt: zod.coerce.date(),
+  }),
+  stats: zod.object({
+    totalePrenotazioni: zod.number(),
+    completate: zod.number(),
+    annullate: zod.number(),
+    inCorso: zod.number(),
+    attive: zod.number(),
+    ritardi: zod.number(),
+    danniSegnalati: zod.number(),
+    totaleSpeso: zod.number(),
+    mediaGiorni: zod.number(),
+    suggerimentoEtichetta: zod
+      .string()
+      .nullable()
+      .describe("affidabile | da_monitorare | problematico"),
+  }),
+  prenotazioni: zod.array(
+    zod.object({
+      id: zod.number(),
+      vetturaId: zod.number(),
+      clienteId: zod.number(),
+      dataInizio: zod.coerce.date(),
+      dataFine: zod.coerce.date(),
+      stato: zod
+        .string()
+        .describe("attiva | completata | annullata | in_corso"),
+      note: zod.string().nullish(),
+      dataRientroEffettiva: zod.coerce.date().nullish(),
+      kmPartenza: zod.number().nullish(),
+      kmRientro: zod.number().nullish(),
+      danni: zod.string().nullish(),
+      prezzoGiornaliero: zod.number().nullish(),
+      kmInclusi: zod.number().nullish(),
+      costoExtraKm: zod.number().nullish(),
+      cauzione: zod.number().nullish(),
+      sconto: zod.number().nullish(),
+      prezzoTotale: zod.number().nullish(),
+      vettura: zod.object({
+        id: zod.number(),
+        marca: zod.string(),
+        modello: zod.string(),
+        anno: zod.number(),
+        targa: zod.string(),
+        carburante: zod
+          .string()
+          .describe("benzina | diesel | elettrica | ibrida | gpl"),
+        stato: zod.string().describe("nuova | usata | km0"),
+        colore: zod.string().nullish(),
+        prezzo: zod.number().nullish(),
+        km: zod.number().nullish(),
+        disponibile: zod.boolean(),
+        note: zod.string().nullish(),
+        foto: zod.array(zod.string()).nullish(),
+        createdAt: zod.coerce.date(),
+        updatedAt: zod.coerce.date(),
+      }),
+      cliente: zod.object({
+        id: zod.number(),
+        nome: zod.string(),
+        cognome: zod.string(),
+        email: zod.string().nullish(),
+        telefono: zod.string().nullish(),
+        codiceFiscale: zod.string().nullish(),
+        indirizzo: zod.string().nullish(),
+        note: zod.string().nullish(),
+        etichetta: zod
+          .string()
+          .nullish()
+          .describe("affidabile | da_monitorare | problematico"),
+        createdAt: zod.coerce.date(),
+        updatedAt: zod.coerce.date(),
+      }),
+      createdAt: zod.coerce.date(),
+      updatedAt: zod.coerce.date(),
+    }),
+  ),
+  contratti: zod.array(
+    zod.object({
+      id: zod.number(),
+      vetturaId: zod.number(),
+      clienteId: zod.number(),
+      prenotazioneId: zod.number().nullish(),
+      numero: zod.string(),
+      tipo: zod.string().describe("vendita | noleggio | leasing | permuta"),
+      dataContratto: zod.coerce.date(),
+      importo: zod.number().nullish(),
+      archiviato: zod.boolean(),
+      note: zod.string().nullish(),
+      vettura: zod.object({
+        id: zod.number(),
+        marca: zod.string(),
+        modello: zod.string(),
+        anno: zod.number(),
+        targa: zod.string(),
+        carburante: zod
+          .string()
+          .describe("benzina | diesel | elettrica | ibrida | gpl"),
+        stato: zod.string().describe("nuova | usata | km0"),
+        colore: zod.string().nullish(),
+        prezzo: zod.number().nullish(),
+        km: zod.number().nullish(),
+        disponibile: zod.boolean(),
+        note: zod.string().nullish(),
+        foto: zod.array(zod.string()).nullish(),
+        createdAt: zod.coerce.date(),
+        updatedAt: zod.coerce.date(),
+      }),
+      cliente: zod.object({
+        id: zod.number(),
+        nome: zod.string(),
+        cognome: zod.string(),
+        email: zod.string().nullish(),
+        telefono: zod.string().nullish(),
+        codiceFiscale: zod.string().nullish(),
+        indirizzo: zod.string().nullish(),
+        note: zod.string().nullish(),
+        etichetta: zod
+          .string()
+          .nullish()
+          .describe("affidabile | da_monitorare | problematico"),
+        createdAt: zod.coerce.date(),
+        updatedAt: zod.coerce.date(),
+      }),
+      createdAt: zod.coerce.date(),
+      updatedAt: zod.coerce.date(),
+    }),
+  ),
+});
+
+/**
+ * @summary Imposta manualmente l'etichetta di un cliente
+ */
+export const UpdateClienteEtichettaParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateClienteEtichettaBody = zod.object({
+  etichetta: zod
+    .string()
+    .nullable()
+    .describe(
+      "affidabile | da_monitorare | problematico | null (reset automatico)",
+    ),
+});
+
+export const UpdateClienteEtichettaResponse = zod.object({
+  id: zod.number(),
+  nome: zod.string(),
+  cognome: zod.string(),
+  email: zod.string().nullish(),
+  telefono: zod.string().nullish(),
+  codiceFiscale: zod.string().nullish(),
+  indirizzo: zod.string().nullish(),
+  note: zod.string().nullish(),
+  etichetta: zod
+    .string()
+    .nullish()
+    .describe("affidabile | da_monitorare | problematico"),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
 });
 
 /**
@@ -684,6 +923,16 @@ export const ListPrenotazioniResponseItem = zod.object({
   dataFine: zod.coerce.date(),
   stato: zod.string().describe("attiva | completata | annullata | in_corso"),
   note: zod.string().nullish(),
+  dataRientroEffettiva: zod.coerce.date().nullish(),
+  kmPartenza: zod.number().nullish(),
+  kmRientro: zod.number().nullish(),
+  danni: zod.string().nullish(),
+  prezzoGiornaliero: zod.number().nullish(),
+  kmInclusi: zod.number().nullish(),
+  costoExtraKm: zod.number().nullish(),
+  cauzione: zod.number().nullish(),
+  sconto: zod.number().nullish(),
+  prezzoTotale: zod.number().nullish(),
   vettura: zod.object({
     id: zod.number(),
     marca: zod.string(),
@@ -712,6 +961,10 @@ export const ListPrenotazioniResponseItem = zod.object({
     codiceFiscale: zod.string().nullish(),
     indirizzo: zod.string().nullish(),
     note: zod.string().nullish(),
+    etichetta: zod
+      .string()
+      .nullish()
+      .describe("affidabile | da_monitorare | problematico"),
     createdAt: zod.coerce.date(),
     updatedAt: zod.coerce.date(),
   }),
@@ -730,6 +983,16 @@ export const CreatePrenotazioneBody = zod.object({
   dataFine: zod.coerce.date(),
   stato: zod.string(),
   note: zod.string().nullish(),
+  dataRientroEffettiva: zod.string().nullish(),
+  kmPartenza: zod.number().nullish(),
+  kmRientro: zod.number().nullish(),
+  danni: zod.string().nullish(),
+  prezzoGiornaliero: zod.number().nullish(),
+  kmInclusi: zod.number().nullish(),
+  costoExtraKm: zod.number().nullish(),
+  cauzione: zod.number().nullish(),
+  sconto: zod.number().nullish(),
+  prezzoTotale: zod.number().nullish(),
 });
 
 /**
@@ -747,6 +1010,16 @@ export const GetPrenotazioneResponse = zod.object({
   dataFine: zod.coerce.date(),
   stato: zod.string().describe("attiva | completata | annullata | in_corso"),
   note: zod.string().nullish(),
+  dataRientroEffettiva: zod.coerce.date().nullish(),
+  kmPartenza: zod.number().nullish(),
+  kmRientro: zod.number().nullish(),
+  danni: zod.string().nullish(),
+  prezzoGiornaliero: zod.number().nullish(),
+  kmInclusi: zod.number().nullish(),
+  costoExtraKm: zod.number().nullish(),
+  cauzione: zod.number().nullish(),
+  sconto: zod.number().nullish(),
+  prezzoTotale: zod.number().nullish(),
   vettura: zod.object({
     id: zod.number(),
     marca: zod.string(),
@@ -775,6 +1048,10 @@ export const GetPrenotazioneResponse = zod.object({
     codiceFiscale: zod.string().nullish(),
     indirizzo: zod.string().nullish(),
     note: zod.string().nullish(),
+    etichetta: zod
+      .string()
+      .nullish()
+      .describe("affidabile | da_monitorare | problematico"),
     createdAt: zod.coerce.date(),
     updatedAt: zod.coerce.date(),
   }),
@@ -796,6 +1073,16 @@ export const UpdatePrenotazioneBody = zod.object({
   dataFine: zod.string().nullish(),
   stato: zod.string().nullish(),
   note: zod.string().nullish(),
+  dataRientroEffettiva: zod.string().nullish(),
+  kmPartenza: zod.number().nullish(),
+  kmRientro: zod.number().nullish(),
+  danni: zod.string().nullish(),
+  prezzoGiornaliero: zod.number().nullish(),
+  kmInclusi: zod.number().nullish(),
+  costoExtraKm: zod.number().nullish(),
+  cauzione: zod.number().nullish(),
+  sconto: zod.number().nullish(),
+  prezzoTotale: zod.number().nullish(),
 });
 
 export const UpdatePrenotazioneResponse = zod.object({
@@ -806,6 +1093,16 @@ export const UpdatePrenotazioneResponse = zod.object({
   dataFine: zod.coerce.date(),
   stato: zod.string().describe("attiva | completata | annullata | in_corso"),
   note: zod.string().nullish(),
+  dataRientroEffettiva: zod.coerce.date().nullish(),
+  kmPartenza: zod.number().nullish(),
+  kmRientro: zod.number().nullish(),
+  danni: zod.string().nullish(),
+  prezzoGiornaliero: zod.number().nullish(),
+  kmInclusi: zod.number().nullish(),
+  costoExtraKm: zod.number().nullish(),
+  cauzione: zod.number().nullish(),
+  sconto: zod.number().nullish(),
+  prezzoTotale: zod.number().nullish(),
   vettura: zod.object({
     id: zod.number(),
     marca: zod.string(),
@@ -834,6 +1131,10 @@ export const UpdatePrenotazioneResponse = zod.object({
     codiceFiscale: zod.string().nullish(),
     indirizzo: zod.string().nullish(),
     note: zod.string().nullish(),
+    etichetta: zod
+      .string()
+      .nullish()
+      .describe("affidabile | da_monitorare | problematico"),
     createdAt: zod.coerce.date(),
     updatedAt: zod.coerce.date(),
   }),
@@ -896,6 +1197,10 @@ export const ListContrattiResponseItem = zod.object({
     codiceFiscale: zod.string().nullish(),
     indirizzo: zod.string().nullish(),
     note: zod.string().nullish(),
+    etichetta: zod
+      .string()
+      .nullish()
+      .describe("affidabile | da_monitorare | problematico"),
     createdAt: zod.coerce.date(),
     updatedAt: zod.coerce.date(),
   }),
@@ -965,6 +1270,10 @@ export const GetContrattoResponse = zod.object({
     codiceFiscale: zod.string().nullish(),
     indirizzo: zod.string().nullish(),
     note: zod.string().nullish(),
+    etichetta: zod
+      .string()
+      .nullish()
+      .describe("affidabile | da_monitorare | problematico"),
     createdAt: zod.coerce.date(),
     updatedAt: zod.coerce.date(),
   }),
@@ -1027,6 +1336,10 @@ export const UpdateContrattoResponse = zod.object({
     codiceFiscale: zod.string().nullish(),
     indirizzo: zod.string().nullish(),
     note: zod.string().nullish(),
+    etichetta: zod
+      .string()
+      .nullish()
+      .describe("affidabile | da_monitorare | problematico"),
     createdAt: zod.coerce.date(),
     updatedAt: zod.coerce.date(),
   }),

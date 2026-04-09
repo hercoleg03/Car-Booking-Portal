@@ -18,6 +18,26 @@ export interface Prenotazione {
   stato: string;
   /** @nullable */
   note?: string | null;
+  /** @nullable */
+  dataRientroEffettiva?: Date | null;
+  /** @nullable */
+  kmPartenza?: number | null;
+  /** @nullable */
+  kmRientro?: number | null;
+  /** @nullable */
+  danni?: string | null;
+  /** @nullable */
+  prezzoGiornaliero?: number | null;
+  /** @nullable */
+  kmInclusi?: number | null;
+  /** @nullable */
+  costoExtraKm?: number | null;
+  /** @nullable */
+  cauzione?: number | null;
+  /** @nullable */
+  sconto?: number | null;
+  /** @nullable */
+  prezzoTotale?: number | null;
   vettura: Vettura;
   cliente: Cliente;
   createdAt: Date;

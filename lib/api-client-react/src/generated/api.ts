@@ -18,6 +18,7 @@ import type {
 
 import type {
   Cliente,
+  ClienteProfilo,
   ClienteStorico,
   Contratto,
   CreateClienteBody,
@@ -38,6 +39,7 @@ import type {
   Prenotazione,
   PrenotazioneCalendario,
   UpdateClienteBody,
+  UpdateClienteEtichettaBody,
   UpdateContrattoBody,
   UpdateManutenzioneBody,
   UpdatePrenotazioneBody,
@@ -1709,6 +1711,181 @@ export function useGetClienteStorico<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * @summary Profilo completo cliente con statistiche, etichetta e storico dettagliato
+ */
+export const getGetClienteProfiloUrl = (id: number) => {
+  return `/api/clienti/${id}/profilo`;
+};
+
+export const getClienteProfilo = async (
+  id: number,
+  options?: RequestInit,
+): Promise<ClienteProfilo> => {
+  return customFetch<ClienteProfilo>(getGetClienteProfiloUrl(id), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetClienteProfiloQueryKey = (id: number) => {
+  return [`/api/clienti/${id}/profilo`] as const;
+};
+
+export const getGetClienteProfiloQueryOptions = <
+  TData = Awaited<ReturnType<typeof getClienteProfilo>>,
+  TError = ErrorType<unknown>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getClienteProfilo>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetClienteProfiloQueryKey(id);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getClienteProfilo>>
+  > = ({ signal }) => getClienteProfilo(id, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getClienteProfilo>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetClienteProfiloQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getClienteProfilo>>
+>;
+export type GetClienteProfiloQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Profilo completo cliente con statistiche, etichetta e storico dettagliato
+ */
+
+export function useGetClienteProfilo<
+  TData = Awaited<ReturnType<typeof getClienteProfilo>>,
+  TError = ErrorType<unknown>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getClienteProfilo>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetClienteProfiloQueryOptions(id, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Imposta manualmente l'etichetta di un cliente
+ */
+export const getUpdateClienteEtichettaUrl = (id: number) => {
+  return `/api/clienti/${id}/etichetta`;
+};
+
+export const updateClienteEtichetta = async (
+  id: number,
+  updateClienteEtichettaBody: UpdateClienteEtichettaBody,
+  options?: RequestInit,
+): Promise<Cliente> => {
+  return customFetch<Cliente>(getUpdateClienteEtichettaUrl(id), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(updateClienteEtichettaBody),
+  });
+};
+
+export const getUpdateClienteEtichettaMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateClienteEtichetta>>,
+    TError,
+    { id: number; data: BodyType<UpdateClienteEtichettaBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateClienteEtichetta>>,
+  TError,
+  { id: number; data: BodyType<UpdateClienteEtichettaBody> },
+  TContext
+> => {
+  const mutationKey = ["updateClienteEtichetta"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateClienteEtichetta>>,
+    { id: number; data: BodyType<UpdateClienteEtichettaBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateClienteEtichetta(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateClienteEtichettaMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateClienteEtichetta>>
+>;
+export type UpdateClienteEtichettaMutationBody =
+  BodyType<UpdateClienteEtichettaBody>;
+export type UpdateClienteEtichettaMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Imposta manualmente l'etichetta di un cliente
+ */
+export const useUpdateClienteEtichetta = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateClienteEtichetta>>,
+    TError,
+    { id: number; data: BodyType<UpdateClienteEtichettaBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateClienteEtichetta>>,
+  TError,
+  { id: number; data: BodyType<UpdateClienteEtichettaBody> },
+  TContext
+> => {
+  return useMutation(getUpdateClienteEtichettaMutationOptions(options));
+};
 
 /**
  * @summary Lista prenotazioni

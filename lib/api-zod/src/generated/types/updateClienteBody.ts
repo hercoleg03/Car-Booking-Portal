@@ -21,4 +21,6 @@ export interface UpdateClienteBody {
   indirizzo?: string | null;
   /** @nullable */
   note?: string | null;
+  /** @nullable */
+  etichetta?: string | null;
 }

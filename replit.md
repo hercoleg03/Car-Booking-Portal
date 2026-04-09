@@ -34,12 +34,14 @@ Sessions last 8 hours. All API routes (except `/api/auth/*` and `/api/healthz`) 
 
 ## Application Features
 
-- **Inventario Vetture** (`/`) — vehicle inventory with filters (fuel type, condition, brand, availability, plate search). CRUD for vehicles.
-- **Calendario** (`/calendario`) — monthly calendar with colored booking bars per vehicle. Color-coded by status (attiva=green, in_corso=blue, completata=grey, annullata=red).
-- **Prenotazioni** (`/prenotazioni`) — booking list with status filters, create new bookings.
-- **Contratti** (`/contratti`) — contracts management with archiving functionality. Types: vendita/noleggio/leasing/permuta.
-- **Clienti** (`/clienti`) — customer directory with search and history view.
-- **Storico Vetture** (`/storico-vetture`) — per-vehicle history of bookings and contracts.
+- **Inventario Vetture** (`/inventario`) — vehicle inventory with filters (fuel type, condition, brand, availability, plate search). CRUD for vehicles with photo upload.
+- **Calendario** (`/calendario`) — monthly/weekly calendar with colored booking bars per vehicle. Color-coded by status (attiva=green, in_corso=blue, completata=grey, annullata=red).
+- **Prenotazioni** (`/prenotazioni`) — booking list with status filters, create/edit bookings with full pricing system (daily rate × days + extra km + deposit - discount = total, live preview), rientro tracking (actual return date, km, damage notes).
+- **Clienti** (`/clienti`) — client directory with automatic reliability label (Affidabile/Da monitorare/Problematico), full profile sheet with KPI stats (total rentals, delays, damages, total spent), rental history, contracts/payment status, editable notes.
+- **Contratti** (`/contratti`) — contract archive with status management.
+- **Manutenzioni** (`/manutenzioni`) — vehicle maintenance log.
+- **Dashboard** (`/dashboard`) — KPI overview, fleet status board, today's activity alerts.
+- **Storico Vetture** (`/storico-vetture`) — per-vehicle history with photo gallery and maintenance log.
 
 ## Database Tables
 

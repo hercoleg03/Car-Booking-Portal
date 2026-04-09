@@ -8,6 +8,8 @@
 
 export * from "./carburanteCount";
 export * from "./cliente";
+export * from "./clienteProfilo";
+export * from "./clienteProfiloStats";
 export * from "./clienteStorico";
 export * from "./contratto";
 export * from "./createClienteBody";
@@ -29,6 +31,7 @@ export * from "./prenotazione";
 export * from "./prenotazioneCalendario";
 export * from "./statoCount";
 export * from "./updateClienteBody";
+export * from "./updateClienteEtichettaBody";
 export * from "./updateContrattoBody";
 export * from "./updateManutenzioneBody";
 export * from "./updatePrenotazioneBody";

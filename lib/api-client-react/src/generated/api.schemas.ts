@@ -90,6 +90,11 @@ export interface Cliente {
   indirizzo?: string | null;
   /** @nullable */
   note?: string | null;
+  /**
+   * affidabile | da_monitorare | problematico
+   * @nullable
+   */
+  etichetta?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -104,6 +109,26 @@ export interface Prenotazione {
   stato: string;
   /** @nullable */
   note?: string | null;
+  /** @nullable */
+  dataRientroEffettiva?: string | null;
+  /** @nullable */
+  kmPartenza?: number | null;
+  /** @nullable */
+  kmRientro?: number | null;
+  /** @nullable */
+  danni?: string | null;
+  /** @nullable */
+  prezzoGiornaliero?: number | null;
+  /** @nullable */
+  kmInclusi?: number | null;
+  /** @nullable */
+  costoExtraKm?: number | null;
+  /** @nullable */
+  cauzione?: number | null;
+  /** @nullable */
+  sconto?: number | null;
+  /** @nullable */
+  prezzoTotale?: number | null;
   vettura: Vettura;
   cliente: Cliente;
   createdAt: string;
@@ -200,6 +225,8 @@ export interface CreateClienteBody {
   indirizzo?: string | null;
   /** @nullable */
   note?: string | null;
+  /** @nullable */
+  etichetta?: string | null;
 }
 
 export interface UpdateClienteBody {
@@ -217,6 +244,8 @@ export interface UpdateClienteBody {
   indirizzo?: string | null;
   /** @nullable */
   note?: string | null;
+  /** @nullable */
+  etichetta?: string | null;
 }
 
 export interface ClienteStorico {
@@ -233,6 +262,26 @@ export interface CreatePrenotazioneBody {
   stato: string;
   /** @nullable */
   note?: string | null;
+  /** @nullable */
+  dataRientroEffettiva?: string | null;
+  /** @nullable */
+  kmPartenza?: number | null;
+  /** @nullable */
+  kmRientro?: number | null;
+  /** @nullable */
+  danni?: string | null;
+  /** @nullable */
+  prezzoGiornaliero?: number | null;
+  /** @nullable */
+  kmInclusi?: number | null;
+  /** @nullable */
+  costoExtraKm?: number | null;
+  /** @nullable */
+  cauzione?: number | null;
+  /** @nullable */
+  sconto?: number | null;
+  /** @nullable */
+  prezzoTotale?: number | null;
 }
 
 export interface UpdatePrenotazioneBody {
@@ -248,6 +297,26 @@ export interface UpdatePrenotazioneBody {
   stato?: string | null;
   /** @nullable */
   note?: string | null;
+  /** @nullable */
+  dataRientroEffettiva?: string | null;
+  /** @nullable */
+  kmPartenza?: number | null;
+  /** @nullable */
+  kmRientro?: number | null;
+  /** @nullable */
+  danni?: string | null;
+  /** @nullable */
+  prezzoGiornaliero?: number | null;
+  /** @nullable */
+  kmInclusi?: number | null;
+  /** @nullable */
+  costoExtraKm?: number | null;
+  /** @nullable */
+  cauzione?: number | null;
+  /** @nullable */
+  sconto?: number | null;
+  /** @nullable */
+  prezzoTotale?: number | null;
 }
 
 export interface CreateContrattoBody {
@@ -336,6 +405,38 @@ export interface FleetStatusItem {
   dataInizio?: string | null;
   /** @nullable */
   prenotazioneId?: number | null;
+}
+
+export interface UpdateClienteEtichettaBody {
+  /**
+   * affidabile | da_monitorare | problematico | null (reset automatico)
+   * @nullable
+   */
+  etichetta: string | null;
+}
+
+export interface ClienteProfiloStats {
+  totalePrenotazioni: number;
+  completate: number;
+  annullate: number;
+  inCorso: number;
+  attive: number;
+  ritardi: number;
+  danniSegnalati: number;
+  totaleSpeso: number;
+  mediaGiorni: number;
+  /**
+   * affidabile | da_monitorare | problematico
+   * @nullable
+   */
+  suggerimentoEtichetta: string | null;
+}
+
+export interface ClienteProfilo {
+  cliente: Cliente;
+  stats: ClienteProfiloStats;
+  prenotazioni: Prenotazione[];
+  contratti: Contratto[];
 }
 
 export type ListVettureParams = {

@@ -11,6 +11,7 @@ export const clientiTable = pgTable("clienti", {
   codiceFiscale: text("codice_fiscale"),
   indirizzo: text("indirizzo"),
   note: text("note"),
+  etichetta: text("etichetta"), // affidabile | da_monitorare | problematico | null (auto-calcolata o manuale)
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });

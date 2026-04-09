@@ -25,6 +25,16 @@ const withJoin = () =>
       dataFine: prenotazioniTable.dataFine,
       stato: prenotazioniTable.stato,
       note: prenotazioniTable.note,
+      dataRientroEffettiva: prenotazioniTable.dataRientroEffettiva,
+      kmPartenza: prenotazioniTable.kmPartenza,
+      kmRientro: prenotazioniTable.kmRientro,
+      danni: prenotazioniTable.danni,
+      prezzoGiornaliero: prenotazioniTable.prezzoGiornaliero,
+      kmInclusi: prenotazioniTable.kmInclusi,
+      costoExtraKm: prenotazioniTable.costoExtraKm,
+      cauzione: prenotazioniTable.cauzione,
+      sconto: prenotazioniTable.sconto,
+      prezzoTotale: prenotazioniTable.prezzoTotale,
       createdAt: prenotazioniTable.createdAt,
       updatedAt: prenotazioniTable.updatedAt,
       vettura: {
@@ -52,6 +62,7 @@ const withJoin = () =>
         codiceFiscale: clientiTable.codiceFiscale,
         indirizzo: clientiTable.indirizzo,
         note: clientiTable.note,
+        etichetta: clientiTable.etichetta,
         createdAt: clientiTable.createdAt,
         updatedAt: clientiTable.updatedAt,
       },
@@ -60,9 +71,16 @@ const withJoin = () =>
     .leftJoin(vettureTable, eq(prenotazioniTable.vetturaId, vettureTable.id))
     .leftJoin(clientiTable, eq(prenotazioniTable.clienteId, clientiTable.id));
 
+const parseNum = (v: string | null | undefined) => (v != null ? parseFloat(v) : null);
+
 const mapPrenotazione = (p: Awaited<ReturnType<typeof withJoin>>[0]) => ({
   ...p,
-  vettura: p.vettura ? { ...p.vettura, prezzo: p.vettura.prezzo ? parseFloat(p.vettura.prezzo) : null } : p.vettura,
+  prezzoGiornaliero: parseNum(p.prezzoGiornaliero),
+  costoExtraKm: parseNum(p.costoExtraKm),
+  cauzione: parseNum(p.cauzione),
+  sconto: parseNum(p.sconto),
+  prezzoTotale: parseNum(p.prezzoTotale),
+  vettura: p.vettura ? { ...p.vettura, prezzo: parseNum(p.vettura.prezzo) } : p.vettura,
   cliente: p.cliente,
 });
 
@@ -96,8 +114,7 @@ router.post("/prenotazioni", async (req, res): Promise<void> => {
     return;
   }
 
-  const [inserted] = await db.insert(prenotazioniTable).values(parsed.data).returning();
-
+  const [inserted] = await db.insert(prenotazioniTable).values(parsed.data as never).returning();
   const [p] = await withJoin().where(eq(prenotazioniTable.id, inserted.id));
   res.status(201).json(GetPrenotazioneResponse.parse(mapPrenotazione(p)));
 });
@@ -132,7 +149,9 @@ router.patch("/prenotazioni/:id", async (req, res): Promise<void> => {
   }
 
   const updateData: Record<string, unknown> = {};
-  Object.entries(parsed.data).forEach(([k, v]) => { if (v !== null && v !== undefined) updateData[k] = v; });
+  Object.entries(parsed.data).forEach(([k, v]) => {
+    if (v !== null && v !== undefined) updateData[k] = v;
+  });
 
   const updated = await db
     .update(prenotazioniTable)

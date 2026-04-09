@@ -19,4 +19,6 @@ export interface CreateClienteBody {
   indirizzo?: string | null;
   /** @nullable */
   note?: string | null;
+  /** @nullable */
+  etichetta?: string | null;
 }

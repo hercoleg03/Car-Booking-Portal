@@ -20,6 +20,11 @@ export interface Cliente {
   indirizzo?: string | null;
   /** @nullable */
   note?: string | null;
+  /**
+   * affidabile | da_monitorare | problematico
+   * @nullable
+   */
+  etichetta?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
