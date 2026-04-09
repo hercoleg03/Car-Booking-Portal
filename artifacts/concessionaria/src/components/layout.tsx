@@ -1,16 +1,166 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, Car, Calendar, ClipboardList, FileText, Users, History, Wrench, LogOut, Sun, Moon, Search, GanttChart, BarChart2 } from "lucide-react";
+import { LayoutDashboard, Car, Calendar, ClipboardList, FileText, Users, History, Wrench, LogOut, Sun, Moon, Search, GanttChart, BarChart2, GripVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import GlobalSearch from "./global-search";
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+  DragOverlay,
+  DragStartEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+
+const DEFAULT_NAV_ITEMS = [
+  { href: "/dashboard", label: "Dashboard", icon: "LayoutDashboard", match: ["/", "/dashboard"] },
+  { href: "/inventario", label: "Inventario", icon: "Car", match: ["/inventario"] },
+  { href: "/calendario", label: "Calendario", icon: "Calendar", match: ["/calendario"] },
+  { href: "/prenotazioni", label: "Prenotazioni", icon: "ClipboardList", match: ["/prenotazioni"] },
+  { href: "/contratti", label: "Contratti", icon: "FileText", match: ["/contratti"] },
+  { href: "/clienti", label: "Clienti", icon: "Users", match: ["/clienti"] },
+  { href: "/storico-vetture", label: "Storico Vetture", icon: "History", match: ["/storico-vetture"] },
+  { href: "/manutenzioni", label: "Manutenzioni", icon: "Wrench", match: ["/manutenzioni"] },
+  { href: "/timeline", label: "Timeline Flotta", icon: "GanttChart", match: ["/timeline"] },
+  { href: "/report", label: "Report", icon: "BarChart2", match: ["/report"] },
+];
+
+const ICON_MAP: Record<string, React.ElementType> = {
+  LayoutDashboard,
+  Car,
+  Calendar,
+  ClipboardList,
+  FileText,
+  Users,
+  History,
+  Wrench,
+  GanttChart,
+  BarChart2,
+};
+
+const LS_KEY = "concessionaria_nav_order";
+
+function loadNavOrder(): string[] | null {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed) && parsed.every((v) => typeof v === "string")) return parsed;
+  } catch {
+    /* ignore */
+  }
+  return null;
+}
+
+function saveNavOrder(order: string[]) {
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify(order));
+  } catch {
+    /* ignore */
+  }
+}
+
+function getOrderedItems(savedOrder: string[] | null) {
+  if (!savedOrder) return DEFAULT_NAV_ITEMS;
+  const map = Object.fromEntries(DEFAULT_NAV_ITEMS.map((item) => [item.href, item]));
+  const ordered = savedOrder.filter((href) => map[href]).map((href) => map[href]);
+  const missing = DEFAULT_NAV_ITEMS.filter((item) => !savedOrder.includes(item.href));
+  return [...ordered, ...missing];
+}
+
+interface NavItem {
+  href: string;
+  label: string;
+  icon: string;
+  match: string[];
+}
+
+interface NavItemContentProps {
+  item: NavItem;
+  isActive: boolean;
+  isDragging?: boolean;
+  dragHandleProps?: React.HTMLAttributes<HTMLButtonElement>;
+}
+
+function NavItemContent({ item, isActive, isDragging, dragHandleProps }: NavItemContentProps) {
+  const IconComponent = ICON_MAP[item.icon];
+  return (
+    <Link href={item.href}>
+      <div
+        className={cn(
+          "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all cursor-pointer group",
+          isActive
+            ? "bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 font-semibold border border-indigo-500/20"
+            : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground border border-transparent",
+          isDragging && "shadow-lg ring-1 ring-indigo-500/30"
+        )}
+      >
+        <button
+          {...dragHandleProps}
+          className="opacity-0 group-hover/nav:opacity-40 hover:!opacity-70 transition-opacity cursor-grab active:cursor-grabbing flex-shrink-0 -ml-1 p-0.5 touch-none"
+          onClick={(e) => e.preventDefault()}
+          tabIndex={-1}
+          aria-label="Trascina per riordinare"
+        >
+          <GripVertical className="w-3.5 h-3.5" />
+        </button>
+        <IconComponent className={cn("w-4 h-4 flex-shrink-0", isActive ? "text-indigo-500" : "opacity-70")} />
+        <span className="text-sm flex-1">{item.label}</span>
+        {isActive && <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />}
+      </div>
+    </Link>
+  );
+}
+
+interface SortableNavItemProps {
+  item: NavItem;
+  isActive: boolean;
+}
+
+function SortableNavItem({ item, isActive }: SortableNavItemProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: item.href,
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.3 : 1,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} className="relative group/nav">
+      <NavItemContent item={item} isActive={isActive} dragHandleProps={{ ...attributes, ...listeners }} />
+    </div>
+  );
+}
+
+function DragOverlayNavItem({ item, isActive }: { item: NavItem; isActive: boolean }) {
+  return (
+    <div className="relative group/nav">
+      <NavItemContent item={item} isActive={isActive} isDragging />
+    </div>
+  );
+}
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const [searchOpen, setSearchOpen] = useState(false);
+  const [navItems, setNavItems] = useState<NavItem[]>(() => getOrderedItems(loadNavOrder()));
+  const [activeId, setActiveId] = useState<string | null>(null);
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
@@ -23,22 +173,35 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("keydown", handleKey);
   }, []);
 
-  const navItems = [
-    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, match: ["/", "/dashboard"] },
-    { href: "/inventario", label: "Inventario", icon: Car, match: ["/inventario"] },
-    { href: "/calendario", label: "Calendario", icon: Calendar, match: ["/calendario"] },
-    { href: "/prenotazioni", label: "Prenotazioni", icon: ClipboardList, match: ["/prenotazioni"] },
-    { href: "/contratti", label: "Contratti", icon: FileText, match: ["/contratti"] },
-    { href: "/clienti", label: "Clienti", icon: Users, match: ["/clienti"] },
-    { href: "/storico-vetture", label: "Storico Vetture", icon: History, match: ["/storico-vetture"] },
-    { href: "/manutenzioni", label: "Manutenzioni", icon: Wrench, match: ["/manutenzioni"] },
-    { href: "/timeline", label: "Timeline Flotta", icon: GanttChart, match: ["/timeline"] },
-    { href: "/report", label: "Report", icon: BarChart2, match: ["/report"] },
-  ];
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 6 },
+    })
+  );
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as string);
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    setActiveId(null);
+    if (over && active.id !== over.id) {
+      setNavItems((items) => {
+        const oldIndex = items.findIndex((i) => i.href === active.id);
+        const newIndex = items.findIndex((i) => i.href === over.id);
+        const newItems = arrayMove(items, oldIndex, newIndex);
+        saveNavOrder(newItems.map((i) => i.href));
+        return newItems;
+      });
+    }
+  };
 
   const handleLogout = async () => {
     await logout();
   };
+
+  const activeItem = activeId ? navItems.find((i) => i.href === activeId) : null;
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
@@ -85,25 +248,29 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <div className="px-3 py-2 mb-1">
             <span className="text-[10px] font-semibold opacity-40 tracking-widest uppercase">Menu principale</span>
           </div>
-          {navItems.map((item) => {
-            const isActive = item.match.includes(location);
-            return (
-              <Link key={item.href} href={item.href}>
-                <div
-                  className={cn(
-                    "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all cursor-pointer group",
-                    isActive
-                      ? "bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 font-semibold border border-indigo-500/20"
-                      : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground border border-transparent"
-                  )}
-                >
-                  <item.icon className={cn("w-4 h-4 flex-shrink-0", isActive ? "text-indigo-500" : "opacity-70")} />
-                  <span className="text-sm flex-1">{item.label}</span>
-                  {isActive && <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />}
-                </div>
-              </Link>
-            );
-          })}
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext items={navItems.map((i) => i.href)} strategy={verticalListSortingStrategy}>
+              {navItems.map((item) => {
+                const isActive = item.match.includes(location);
+                return (
+                  <SortableNavItem key={item.href} item={item} isActive={isActive} />
+                );
+              })}
+            </SortableContext>
+            <DragOverlay>
+              {activeItem ? (
+                <DragOverlayNavItem
+                  item={activeItem}
+                  isActive={activeItem.match.includes(location)}
+                />
+              ) : null}
+            </DragOverlay>
+          </DndContext>
         </nav>
 
         {/* User + Logout */}
