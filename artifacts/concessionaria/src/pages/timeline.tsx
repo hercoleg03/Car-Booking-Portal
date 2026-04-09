@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useMemo, useEffect } from "react";
 import {
   useListVetture, useListPrenotazioni, useListClienti,
-  useUpdatePrenotazione, getListPrenotazioniQueryKey,
+  useUpdatePrenotazione, getListPrenotazioniQueryKey, getListContrattiQueryKey,
 } from "@workspace/api-client-react";
 import {
   addDays, addHours, startOfDay, format, parseISO,
@@ -241,9 +241,15 @@ export default function Timeline() {
         id: drag.bookingId,
         data: { dataInizio: newInizio, dataFine: newFine } as never,
       });
-      await queryClient.invalidateQueries({ queryKey: getListPrenotazioniQueryKey() });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: getListPrenotazioniQueryKey() }),
+        queryClient.invalidateQueries({ queryKey: getListContrattiQueryKey() }),
+      ]);
       const dir = giorni > 0 ? "avanti" : "indietro";
-      toast({ title: "Prenotazione spostata", description: `${Math.abs(giorni)} g ${dir}` });
+      toast({
+        title: "Prenotazione spostata",
+        description: `${Math.abs(giorni)} giorn${Math.abs(giorni) === 1 ? "o" : "i"} ${dir} — contratti aggiornati`,
+      });
     } catch {
       toast({ title: "Errore", description: "Impossibile aggiornare la prenotazione", variant: "destructive" });
     }

@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq, and, gte, lte, type SQL } from "drizzle-orm";
-import { db, prenotazioniTable, vettureTable, clientiTable } from "@workspace/db";
+import { db, prenotazioniTable, vettureTable, clientiTable, contrattiTable } from "@workspace/db";
 import {
   ListPrenotazioniQueryParams,
   ListPrenotazioniResponse,
@@ -159,6 +159,22 @@ router.get("/prenotazioni/:id", async (req, res): Promise<void> => {
   res.json(GetPrenotazioneResponse.parse(mapPrenotazione(p)));
 });
 
+// ── Helpers per cascade date ───────────────────────────────────────────────
+
+/** Sposta una data YYYY-MM-DD di N giorni (positivi o negativi) */
+function shiftDate(dateStr: string, days: number): string {
+  const d = new Date(dateStr + "T00:00:00Z");
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
+/** Differenza in giorni interi tra due date YYYY-MM-DD */
+function diffDays(a: string, b: string): number {
+  const msA = new Date(a + "T00:00:00Z").getTime();
+  const msB = new Date(b + "T00:00:00Z").getTime();
+  return Math.round((msA - msB) / 86_400_000);
+}
+
 router.patch("/prenotazioni/:id", async (req, res): Promise<void> => {
   const params = UpdatePrenotazioneParams.safeParse(req.params);
   if (!params.success) {
@@ -169,6 +185,17 @@ router.patch("/prenotazioni/:id", async (req, res): Promise<void> => {
   const parsed = UpdatePrenotazioneBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+
+  // Legge la prenotazione originale per calcolare lo scostamento date
+  const [original] = await db
+    .select({ dataInizio: prenotazioniTable.dataInizio, dataFine: prenotazioniTable.dataFine })
+    .from(prenotazioniTable)
+    .where(eq(prenotazioniTable.id, params.data.id));
+
+  if (!original) {
+    res.status(404).json({ error: "Prenotazione non trovata" });
     return;
   }
 
@@ -191,6 +218,36 @@ router.patch("/prenotazioni/:id", async (req, res): Promise<void> => {
   if (!updated.length) {
     res.status(404).json({ error: "Prenotazione non trovata" });
     return;
+  }
+
+  // ── Cascata sui contratti collegati ──────────────────────────────────────
+  const newInizio = (parsed.data as Record<string, unknown>)["dataInizio"] as string | undefined;
+  const newFine   = (parsed.data as Record<string, unknown>)["dataFine"]   as string | undefined;
+
+  if ((newInizio || newFine) && original.dataInizio) {
+    // Scostamento in giorni basato sulla dataInizio (o dataFine se solo quella è cambiata)
+    const offsetGiorni = newInizio
+      ? diffDays(newInizio, original.dataInizio)
+      : newFine && original.dataFine
+      ? diffDays(newFine, original.dataFine)
+      : 0;
+
+    if (offsetGiorni !== 0) {
+      // Trova i contratti collegati a questa prenotazione
+      const contratti = await db
+        .select({ id: contrattiTable.id, dataContratto: contrattiTable.dataContratto })
+        .from(contrattiTable)
+        .where(eq(contrattiTable.prenotazioneId, params.data.id));
+
+      // Aggiorna la dataContratto di ciascuno con lo stesso offset
+      for (const c of contratti) {
+        const nuovaData = shiftDate(c.dataContratto, offsetGiorni);
+        await db
+          .update(contrattiTable)
+          .set({ dataContratto: nuovaData })
+          .where(eq(contrattiTable.id, c.id));
+      }
+    }
   }
 
   const [p] = await withJoin().where(eq(prenotazioniTable.id, params.data.id));
