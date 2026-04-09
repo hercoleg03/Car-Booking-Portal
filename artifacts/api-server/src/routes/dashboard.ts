@@ -92,6 +92,8 @@ router.get("/dashboard/fleet-status", async (_req, res): Promise<void> => {
       dataInizio: prenotazioniTable.dataInizio,
       dataFine: prenotazioniTable.dataFine,
       clienteId: prenotazioniTable.clienteId,
+      nomeLibero: prenotazioniTable.nomeLibero,
+      cognomeLibero: prenotazioniTable.cognomeLibero,
       nomeCliente: clientiTable.nome,
       cognomeCliente: clientiTable.cognome,
     })
@@ -112,6 +114,8 @@ router.get("/dashboard/fleet-status", async (_req, res): Promise<void> => {
       dataInizio: prenotazioniTable.dataInizio,
       dataFine: prenotazioniTable.dataFine,
       id: prenotazioniTable.id,
+      nomeLibero: prenotazioniTable.nomeLibero,
+      cognomeLibero: prenotazioniTable.cognomeLibero,
       nomeCliente: clientiTable.nome,
       cognomeCliente: clientiTable.cognome,
     })
@@ -167,13 +171,17 @@ router.get("/dashboard/fleet-status", async (_req, res): Promise<void> => {
 
     if (attiva) {
       statoOperativo = attiva.stato === "in_corso" ? "noleggiata" : "prenotata";
-      clienteNome = `${attiva.nomeCliente ?? ""} ${attiva.cognomeCliente ?? ""}`.trim() || null;
+      clienteNome = (attiva.nomeCliente
+        ? `${attiva.nomeCliente ?? ""} ${attiva.cognomeCliente ?? ""}`.trim()
+        : `${attiva.nomeLibero ?? ""} ${attiva.cognomeLibero ?? ""}`.trim()) || null;
       dataFine = attiva.dataFine;
       dataInizio = attiva.dataInizio;
       prenotazioneId = attiva.id;
     } else if (futura) {
       statoOperativo = "prenotata";
-      clienteNome = `${futura.nomeCliente ?? ""} ${futura.cognomeCliente ?? ""}`.trim() || null;
+      clienteNome = (futura.nomeCliente
+        ? `${futura.nomeCliente ?? ""} ${futura.cognomeCliente ?? ""}`.trim()
+        : `${futura.nomeLibero ?? ""} ${futura.cognomeLibero ?? ""}`.trim()) || null;
       dataFine = futura.dataFine;
       dataInizio = futura.dataInizio;
       prenotazioneId = futura.id;
@@ -218,6 +226,8 @@ router.get("/dashboard/prenotazioni-calendario", async (req, res): Promise<void>
       id: prenotazioniTable.id,
       vetturaId: prenotazioniTable.vetturaId,
       clienteId: prenotazioniTable.clienteId,
+      nomeLibero: prenotazioniTable.nomeLibero,
+      cognomeLibero: prenotazioniTable.cognomeLibero,
       dataInizio: prenotazioniTable.dataInizio,
       dataFine: prenotazioniTable.dataFine,
       stato: prenotazioniTable.stato,
@@ -239,17 +249,22 @@ router.get("/dashboard/prenotazioni-calendario", async (req, res): Promise<void>
     .orderBy(prenotazioniTable.dataInizio);
 
   res.json(GetPrenotazioniCalendarioResponse.parse(
-    prenotazioni.map(p => ({
-      id: p.id,
-      vetturaId: p.vetturaId,
-      clienteId: p.clienteId,
-      dataInizio: p.dataInizio,
-      dataFine: p.dataFine,
-      stato: p.stato,
-      vetturaNome: `${p.marca ?? ""} ${p.modello ?? ""}`.trim(),
-      clienteNome: `${p.nomeCliente ?? ""} ${p.cognomeCliente ?? ""}`.trim(),
-      targa: p.targa ?? "",
-    }))
+    prenotazioni.map(p => {
+      const clienteNome = p.nomeCliente
+        ? `${p.nomeCliente ?? ""} ${p.cognomeCliente ?? ""}`.trim()
+        : `${p.nomeLibero ?? ""} ${p.cognomeLibero ?? ""}`.trim();
+      return {
+        id: p.id,
+        vetturaId: p.vetturaId,
+        clienteId: p.clienteId ?? null,
+        dataInizio: p.dataInizio,
+        dataFine: p.dataFine,
+        stato: p.stato,
+        vetturaNome: `${p.marca ?? ""} ${p.modello ?? ""}`.trim(),
+        clienteNome,
+        targa: p.targa ?? "",
+      };
+    })
   ));
 });
 

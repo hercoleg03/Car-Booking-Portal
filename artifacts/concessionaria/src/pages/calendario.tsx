@@ -27,6 +27,9 @@ interface EditDialog {
   prenotazioneId: number | null;
   vetturaId: number;
   clienteId: number;
+  nomeLiberoMode: boolean;
+  nomeLibero: string;
+  cognomeLibero: string;
   dataInizio: string;
   dataFine: string;
   stato: string;
@@ -39,6 +42,9 @@ const defaultEdit = (): EditDialog => ({
   prenotazioneId: null,
   vetturaId: 0,
   clienteId: 0,
+  nomeLiberoMode: false,
+  nomeLibero: "",
+  cognomeLibero: "",
   dataInizio: new Date().toISOString().split("T")[0],
   dataFine: addDays(new Date(), 1).toISOString().split("T")[0],
   stato: "attiva",
@@ -121,6 +127,9 @@ export default function Calendario() {
       prenotazioneId: null,
       vetturaId,
       clienteId: 0,
+      nomeLiberoMode: false,
+      nomeLibero: "",
+      cognomeLibero: "",
       dataInizio: format(day, "yyyy-MM-dd"),
       dataFine: format(addDays(day, 1), "yyyy-MM-dd"),
       stato: "attiva",
@@ -130,11 +139,18 @@ export default function Calendario() {
   }
 
   function openEditBooking(p: NonNullable<typeof prenotazioni>[0]) {
+    const isNomeLibero = p.clienteId == null;
+    const nameParts = isNomeLibero ? p.clienteNome.trim().split(" ") : [];
+    const nomeLibero = isNomeLibero ? (nameParts[0] ?? "") : "";
+    const cognomeLibero = isNomeLibero ? nameParts.slice(1).join(" ") : "";
     setDialog({
       open: true,
       prenotazioneId: p.id,
       vetturaId: p.vetturaId,
-      clienteId: p.clienteId,
+      clienteId: isNomeLibero ? 0 : (p.clienteId ?? 0),
+      nomeLiberoMode: isNomeLibero,
+      nomeLibero,
+      cognomeLibero,
       dataInizio: p.dataInizio,
       dataFine: p.dataFine,
       stato: p.stato,
@@ -168,16 +184,30 @@ export default function Calendario() {
   }
 
   function handleSave() {
-    if (!dialog.vetturaId || !dialog.clienteId) {
-      toast({ title: "Compila tutti i campi richiesti", variant: "destructive" });
+    if (!dialog.vetturaId) {
+      toast({ title: "Seleziona una vettura", variant: "destructive" });
       return;
     }
+    if (dialog.nomeLiberoMode && !dialog.nomeLibero.trim() && !dialog.cognomeLibero.trim()) {
+      toast({ title: "Inserisci almeno nome o cognome", variant: "destructive" });
+      return;
+    }
+    if (!dialog.nomeLiberoMode && !dialog.clienteId) {
+      toast({ title: "Seleziona un cliente", variant: "destructive" });
+      return;
+    }
+    const clienteId = dialog.nomeLiberoMode ? null : (dialog.clienteId || null);
+    const nomeLibero = dialog.nomeLiberoMode ? (dialog.nomeLibero || null) : null;
+    const cognomeLibero = dialog.nomeLiberoMode ? (dialog.cognomeLibero || null) : null;
+
     if (dialog.isNew) {
       createPrenotazione.mutate(
         {
           data: {
             vetturaId: dialog.vetturaId,
-            clienteId: dialog.clienteId,
+            clienteId,
+            nomeLibero,
+            cognomeLibero,
             dataInizio: dialog.dataInizio + "T00:00:00",
             dataFine: dialog.dataFine + "T00:00:00",
             stato: dialog.stato as "attiva" | "in_corso" | "completata" | "annullata",
@@ -199,7 +229,9 @@ export default function Calendario() {
           id: dialog.prenotazioneId,
           data: {
             vetturaId: dialog.vetturaId,
-            clienteId: dialog.clienteId,
+            clienteId,
+            nomeLibero,
+            cognomeLibero,
             dataInizio: dialog.dataInizio + "T00:00:00",
             dataFine: dialog.dataFine + "T00:00:00",
             stato: dialog.stato as "attiva" | "in_corso" | "completata" | "annullata",
@@ -442,22 +474,57 @@ export default function Calendario() {
             </div>
 
             <div className="space-y-1.5">
-              <Label>Cliente</Label>
-              <Select
-                value={dialog.clienteId ? dialog.clienteId.toString() : ""}
-                onValueChange={v => setDialog(d => ({ ...d, clienteId: Number(v) }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleziona cliente" />
-                </SelectTrigger>
-                <SelectContent>
-                  {clienti?.map(c => (
-                    <SelectItem key={c.id} value={c.id.toString()}>
-                      {c.nome} {c.cognome}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="flex items-center justify-between">
+                <Label>Cliente</Label>
+                <div className="flex rounded-md overflow-hidden border text-xs">
+                  <button
+                    type="button"
+                    onClick={() => setDialog(d => ({ ...d, nomeLiberoMode: false, nomeLibero: "", cognomeLibero: "" }))}
+                    className={`px-2.5 py-1 font-medium transition-colors ${!dialog.nomeLiberoMode ? "bg-foreground text-background" : "hover:bg-muted"}`}
+                  >
+                    Cliente esistente
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDialog(d => ({ ...d, nomeLiberoMode: true, clienteId: 0 }))}
+                    className={`px-2.5 py-1 font-medium transition-colors border-l ${dialog.nomeLiberoMode ? "bg-foreground text-background" : "hover:bg-muted"}`}
+                  >
+                    Nome libero
+                  </button>
+                </div>
+              </div>
+              {dialog.nomeLiberoMode ? (
+                <div className="grid grid-cols-2 gap-2">
+                  <Input
+                    placeholder="Nome"
+                    value={dialog.nomeLibero}
+                    onChange={e => setDialog(d => ({ ...d, nomeLibero: e.target.value }))}
+                    autoComplete="off"
+                  />
+                  <Input
+                    placeholder="Cognome"
+                    value={dialog.cognomeLibero}
+                    onChange={e => setDialog(d => ({ ...d, cognomeLibero: e.target.value }))}
+                    autoComplete="off"
+                  />
+                </div>
+              ) : (
+                <Select
+                  value={dialog.clienteId ? dialog.clienteId.toString() : ""}
+                  onValueChange={v => setDialog(d => ({ ...d, clienteId: Number(v) }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleziona cliente" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {clienti?.map(c => (
+                      <SelectItem key={c.id} value={c.id.toString()}>
+                        {c.nome} {c.cognome}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-3">

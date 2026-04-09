@@ -1,4 +1,5 @@
-import { useGetDashboardStats, useGetFleetStatus } from "@workspace/api-client-react";
+import { useState } from "react";
+import { useGetDashboardStats, useGetFleetStatus, useCreatePrenotazione, useListVetture, useListClienti, getListPrenotazioniQueryKey } from "@workspace/api-client-react";
 import {
   Car, CheckCircle2, Calendar, FileText, Users, TrendingUp, Loader2,
   ArrowUpRight, ArrowDownLeft, Plus, AlertCircle, Wrench, Clock
@@ -6,9 +7,15 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useLocation } from "wouter";
 import { format, parseISO } from "date-fns";
 import { it } from "date-fns/locale";
+import { useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
 
 const STATO_CFG: Record<string, { label: string; border: string; bg: string; text: string; dot: string }> = {
   disponibile: {
@@ -79,10 +86,76 @@ function KpiCard({ title, value, icon: Icon, color, bg, description, loading }: 
   );
 }
 
+interface QuickPrenotazioneForm {
+  vetturaId: number;
+  clienteId: number;
+  nomeLiberoMode: boolean;
+  nomeLibero: string;
+  cognomeLibero: string;
+  dataInizio: string;
+  dataFine: string;
+}
+
+const emptyQuickForm = (): QuickPrenotazioneForm => ({
+  vetturaId: 0,
+  clienteId: 0,
+  nomeLiberoMode: false,
+  nomeLibero: "",
+  cognomeLibero: "",
+  dataInizio: new Date().toISOString().split("T")[0],
+  dataFine: new Date(Date.now() + 86400000 * 3).toISOString().split("T")[0],
+});
+
 export default function Dashboard() {
   const { data: stats, isLoading: statsLoading } = useGetDashboardStats();
   const { data: fleetStatus, isLoading: fleetLoading } = useGetFleetStatus();
+  const { data: vetture } = useListVetture();
+  const { data: clienti } = useListClienti();
+  const createPrenotazione = useCreatePrenotazione();
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
   const [, navigate] = useLocation();
+  const [prenotazioneOpen, setPrenotazioneOpen] = useState(false);
+  const [quickForm, setQuickForm] = useState<QuickPrenotazioneForm>(emptyQuickForm());
+
+  const setQF = (partial: Partial<QuickPrenotazioneForm>) => setQuickForm(f => ({ ...f, ...partial }));
+
+  function handleQuickSave() {
+    if (!quickForm.vetturaId) {
+      toast({ title: "Seleziona una vettura", variant: "destructive" });
+      return;
+    }
+    if (quickForm.nomeLiberoMode && !quickForm.nomeLibero.trim() && !quickForm.cognomeLibero.trim()) {
+      toast({ title: "Inserisci almeno nome o cognome", variant: "destructive" });
+      return;
+    }
+    if (!quickForm.nomeLiberoMode && !quickForm.clienteId) {
+      toast({ title: "Seleziona un cliente", variant: "destructive" });
+      return;
+    }
+    createPrenotazione.mutate(
+      {
+        data: {
+          vetturaId: quickForm.vetturaId,
+          clienteId: quickForm.nomeLiberoMode ? null : (quickForm.clienteId || null),
+          nomeLibero: quickForm.nomeLiberoMode ? (quickForm.nomeLibero || null) : null,
+          cognomeLibero: quickForm.nomeLiberoMode ? (quickForm.cognomeLibero || null) : null,
+          dataInizio: quickForm.dataInizio,
+          dataFine: quickForm.dataFine,
+          stato: "attiva",
+        },
+      },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: getListPrenotazioniQueryKey() });
+          setPrenotazioneOpen(false);
+          setQuickForm(emptyQuickForm());
+          toast({ title: "Prenotazione creata" });
+        },
+        onError: () => toast({ title: "Errore creazione", variant: "destructive" }),
+      }
+    );
+  }
 
   const today = new Date();
   const todayStr = format(today, "EEEE d MMMM yyyy", { locale: it });
@@ -104,7 +177,7 @@ export default function Dashboard() {
           <p className="text-sm text-muted-foreground capitalize">{todayStr}</p>
         </div>
         <div className="flex gap-2">
-          <Button size="sm" variant="outline" className="gap-1.5" onClick={() => navigate("/prenotazioni")}>
+          <Button size="sm" variant="outline" className="gap-1.5" onClick={() => { setQuickForm(emptyQuickForm()); setPrenotazioneOpen(true); }}>
             <Plus className="w-3.5 h-3.5" /> Prenotazione
           </Button>
           <Button size="sm" variant="outline" className="gap-1.5" onClick={() => navigate("/clienti")}>
@@ -314,6 +387,100 @@ export default function Dashboard() {
           </Card>
         </div>
       )}
+
+      {/* ── Quick prenotazione modal ── */}
+      <Dialog open={prenotazioneOpen} onOpenChange={open => !open && setPrenotazioneOpen(false)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Plus className="w-4 h-4" /> Nuova Prenotazione
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <Label>Vettura</Label>
+              <Select value={quickForm.vetturaId ? quickForm.vetturaId.toString() : ""} onValueChange={v => setQF({ vetturaId: Number(v) })}>
+                <SelectTrigger><SelectValue placeholder="Seleziona vettura" /></SelectTrigger>
+                <SelectContent>
+                  {vetture?.map(v => (
+                    <SelectItem key={v.id} value={v.id.toString()}>
+                      {v.marca} {v.modello} — {v.targa}{v.disponibile ? "" : " [non disp.]"}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <Label>Cliente</Label>
+                <div className="flex rounded-md overflow-hidden border text-xs">
+                  <button
+                    type="button"
+                    onClick={() => setQF({ nomeLiberoMode: false, nomeLibero: "", cognomeLibero: "" })}
+                    className={`px-2.5 py-1 font-medium transition-colors ${!quickForm.nomeLiberoMode ? "bg-foreground text-background" : "hover:bg-muted"}`}
+                  >
+                    Cliente esistente
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setQF({ nomeLiberoMode: true, clienteId: 0 })}
+                    className={`px-2.5 py-1 font-medium transition-colors border-l ${quickForm.nomeLiberoMode ? "bg-foreground text-background" : "hover:bg-muted"}`}
+                  >
+                    Nome libero
+                  </button>
+                </div>
+              </div>
+              {quickForm.nomeLiberoMode ? (
+                <div className="grid grid-cols-2 gap-2">
+                  <Input
+                    placeholder="Nome"
+                    value={quickForm.nomeLibero}
+                    onChange={e => setQF({ nomeLibero: e.target.value })}
+                    autoComplete="off"
+                  />
+                  <Input
+                    placeholder="Cognome"
+                    value={quickForm.cognomeLibero}
+                    onChange={e => setQF({ cognomeLibero: e.target.value })}
+                    autoComplete="off"
+                  />
+                </div>
+              ) : (
+                <Select value={quickForm.clienteId ? quickForm.clienteId.toString() : ""} onValueChange={v => setQF({ clienteId: Number(v) })}>
+                  <SelectTrigger><SelectValue placeholder="Seleziona cliente" /></SelectTrigger>
+                  <SelectContent>
+                    {clienti?.map(c => (
+                      <SelectItem key={c.id} value={c.id.toString()}>
+                        {c.nome} {c.cognome}{c.codiceFiscale ? ` (${c.codiceFiscale})` : ""}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label>Dal</Label>
+                <Input type="date" value={quickForm.dataInizio} onChange={e => setQF({ dataInizio: e.target.value })} />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Al</Label>
+                <Input type="date" value={quickForm.dataFine} onChange={e => setQF({ dataFine: e.target.value })} />
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter className="mt-2">
+            <Button variant="outline" onClick={() => setPrenotazioneOpen(false)}>Annulla</Button>
+            <Button onClick={handleQuickSave} disabled={createPrenotazione.isPending}>
+              {createPrenotazione.isPending ? "Creazione..." : "Crea Prenotazione"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

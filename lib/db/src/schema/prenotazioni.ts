@@ -7,7 +7,9 @@ import { clientiTable } from "./clienti";
 export const prenotazioniTable = pgTable("prenotazioni", {
   id: serial("id").primaryKey(),
   vetturaId: integer("vettura_id").notNull().references(() => vettureTable.id),
-  clienteId: integer("cliente_id").notNull().references(() => clientiTable.id),
+  clienteId: integer("cliente_id").references(() => clientiTable.id),
+  nomeLibero: text("nome_libero"),
+  cognomeLibero: text("cognome_libero"),
   dataInizio: text("data_inizio").notNull(), // YYYY-MM-DD
   dataFine: text("data_fine").notNull(), // YYYY-MM-DD
   stato: text("stato").notNull().default("attiva"), // attiva | completata | annullata | in_corso

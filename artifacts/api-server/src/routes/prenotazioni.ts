@@ -21,6 +21,8 @@ const withJoin = () =>
       id: prenotazioniTable.id,
       vetturaId: prenotazioniTable.vetturaId,
       clienteId: prenotazioniTable.clienteId,
+      nomeLibero: prenotazioniTable.nomeLibero,
+      cognomeLibero: prenotazioniTable.cognomeLibero,
       dataInizio: prenotazioniTable.dataInizio,
       dataFine: prenotazioniTable.dataFine,
       stato: prenotazioniTable.stato,
@@ -81,7 +83,21 @@ const mapPrenotazione = (p: Awaited<ReturnType<typeof withJoin>>[0]) => ({
   sconto: parseNum(p.sconto),
   prezzoTotale: parseNum(p.prezzoTotale),
   vettura: p.vettura ? { ...p.vettura, prezzo: parseNum(p.vettura.prezzo) } : p.vettura,
-  cliente: p.cliente,
+  cliente: p.cliente?.id != null
+    ? p.cliente
+    : {
+        id: null,
+        nome: p.nomeLibero ?? "",
+        cognome: p.cognomeLibero ?? "",
+        email: null,
+        telefono: null,
+        codiceFiscale: null,
+        indirizzo: null,
+        note: null,
+        etichetta: null,
+        createdAt: null,
+        updatedAt: null,
+      },
 });
 
 router.get("/prenotazioni", async (req, res): Promise<void> => {
@@ -111,6 +127,14 @@ router.post("/prenotazioni", async (req, res): Promise<void> => {
   const parsed = CreatePrenotazioneBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+
+  const { clienteId, nomeLibero, cognomeLibero } = parsed.data;
+  const hasCliente = clienteId != null;
+  const hasNomeLibero = (nomeLibero ?? "").trim() !== "" || (cognomeLibero ?? "").trim() !== "";
+  if (!hasCliente && !hasNomeLibero) {
+    res.status(400).json({ error: "Specificare un cliente esistente oppure un nome libero." });
     return;
   }
 
@@ -148,9 +172,14 @@ router.patch("/prenotazioni/:id", async (req, res): Promise<void> => {
     return;
   }
 
+  const NULLABLE_FIELDS = new Set(["clienteId", "nomeLibero", "cognomeLibero"]);
   const updateData: Record<string, unknown> = {};
   Object.entries(parsed.data).forEach(([k, v]) => {
-    if (v !== null && v !== undefined) updateData[k] = v;
+    if (v !== undefined) {
+      if (v !== null || NULLABLE_FIELDS.has(k)) {
+        updateData[k] = v;
+      }
+    }
   });
 
   const updated = await db

@@ -31,6 +31,9 @@ import { useToast } from "@/hooks/use-toast";
 interface PrenotazioneFormValues {
   vetturaId: number;
   clienteId: number;
+  nomeLiberoMode: boolean;
+  nomeLibero: string;
+  cognomeLibero: string;
   dataInizio: string;
   dataFine: string;
   stato: string;
@@ -51,6 +54,9 @@ interface PrenotazioneFormValues {
 const emptyForm = (): PrenotazioneFormValues => ({
   vetturaId: 0,
   clienteId: 0,
+  nomeLiberoMode: false,
+  nomeLibero: "",
+  cognomeLibero: "",
   dataInizio: new Date().toISOString().split("T")[0],
   dataFine: new Date(Date.now() + 86400000 * 3).toISOString().split("T")[0],
   stato: "attiva",
@@ -150,10 +156,14 @@ export default function Prenotazioni() {
   }
 
   function openEdit(p: NonNullable<typeof prenotazioni>[0]) {
+    const isNomeLibero = p.cliente.id == null;
     setEditingId(p.id);
     setForm({
       vetturaId: p.vettura.id,
-      clienteId: p.cliente.id,
+      clienteId: isNomeLibero ? 0 : (p.cliente.id ?? 0),
+      nomeLiberoMode: isNomeLibero,
+      nomeLibero: isNomeLibero ? p.cliente.nome : "",
+      cognomeLibero: isNomeLibero ? p.cliente.cognome : "",
       dataInizio: (p.dataInizio ?? "").split("T")[0],
       dataFine: (p.dataFine ?? "").split("T")[0],
       stato: p.stato,
@@ -176,7 +186,9 @@ export default function Prenotazioni() {
     const tot = calcolaTotale(form);
     return {
       vetturaId: form.vetturaId,
-      clienteId: form.clienteId,
+      clienteId: form.nomeLiberoMode ? null : (form.clienteId || null),
+      nomeLibero: form.nomeLiberoMode ? (form.nomeLibero || null) : null,
+      cognomeLibero: form.nomeLiberoMode ? (form.cognomeLibero || null) : null,
       dataInizio: form.dataInizio,
       dataFine: form.dataFine,
       stato: form.stato as "attiva" | "in_corso" | "completata" | "annullata",
@@ -195,8 +207,16 @@ export default function Prenotazioni() {
   }
 
   function handleSave() {
-    if (!form.vetturaId || !form.clienteId) {
-      toast({ title: "Seleziona vettura e cliente", variant: "destructive" });
+    if (!form.vetturaId) {
+      toast({ title: "Seleziona una vettura", variant: "destructive" });
+      return;
+    }
+    if (form.nomeLiberoMode && !form.nomeLibero.trim() && !form.cognomeLibero.trim()) {
+      toast({ title: "Inserisci almeno nome o cognome", variant: "destructive" });
+      return;
+    }
+    if (!form.nomeLiberoMode && !form.clienteId) {
+      toast({ title: "Seleziona un cliente", variant: "destructive" });
       return;
     }
     const payload = buildPayload();
@@ -390,17 +410,52 @@ export default function Prenotazioni() {
             {/* ── Tab: Dati base ── */}
             <TabsContent value="base" className="space-y-4 min-h-[280px]">
               <div className="space-y-1.5">
-                <Label>Cliente</Label>
-                <Select value={form.clienteId ? form.clienteId.toString() : ""} onValueChange={v => setF({ clienteId: Number(v) })}>
-                  <SelectTrigger><SelectValue placeholder="Seleziona cliente" /></SelectTrigger>
-                  <SelectContent>
-                    {clienti?.map(c => (
-                      <SelectItem key={c.id} value={c.id.toString()}>
-                        {c.nome} {c.cognome}{c.codiceFiscale ? ` (${c.codiceFiscale})` : ""}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="flex items-center justify-between">
+                  <Label>Cliente</Label>
+                  <div className="flex rounded-md overflow-hidden border text-xs">
+                    <button
+                      type="button"
+                      onClick={() => setF({ nomeLiberoMode: false, nomeLibero: "", cognomeLibero: "" })}
+                      className={`px-2.5 py-1 font-medium transition-colors ${!form.nomeLiberoMode ? "bg-foreground text-background" : "hover:bg-muted"}`}
+                    >
+                      Cliente esistente
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setF({ nomeLiberoMode: true, clienteId: 0 })}
+                      className={`px-2.5 py-1 font-medium transition-colors border-l ${form.nomeLiberoMode ? "bg-foreground text-background" : "hover:bg-muted"}`}
+                    >
+                      Nome libero
+                    </button>
+                  </div>
+                </div>
+                {form.nomeLiberoMode ? (
+                  <div className="grid grid-cols-2 gap-2">
+                    <Input
+                      placeholder="Nome"
+                      value={form.nomeLibero}
+                      onChange={e => setF({ nomeLibero: e.target.value })}
+                      autoComplete="off"
+                    />
+                    <Input
+                      placeholder="Cognome"
+                      value={form.cognomeLibero}
+                      onChange={e => setF({ cognomeLibero: e.target.value })}
+                      autoComplete="off"
+                    />
+                  </div>
+                ) : (
+                  <Select value={form.clienteId ? form.clienteId.toString() : ""} onValueChange={v => setF({ clienteId: Number(v) })}>
+                    <SelectTrigger><SelectValue placeholder="Seleziona cliente" /></SelectTrigger>
+                    <SelectContent>
+                      {clienti?.map(c => (
+                        <SelectItem key={c.id} value={c.id.toString()}>
+                          {c.nome} {c.cognome}{c.codiceFiscale ? ` (${c.codiceFiscale})` : ""}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
               <div className="space-y-1.5">
                 <Label>Vettura</Label>

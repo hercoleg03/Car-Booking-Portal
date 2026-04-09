@@ -102,7 +102,12 @@ export interface Cliente {
 export interface Prenotazione {
   id: number;
   vetturaId: number;
-  clienteId: number;
+  /** @nullable */
+  clienteId: number | null;
+  /** @nullable */
+  nomeLibero?: string | null;
+  /** @nullable */
+  cognomeLibero?: string | null;
   dataInizio: string;
   dataFine: string;
   /** attiva | completata | annullata | in_corso */
@@ -130,9 +135,35 @@ export interface Prenotazione {
   /** @nullable */
   prezzoTotale?: number | null;
   vettura: Vettura;
-  cliente: Cliente;
+  cliente: ClientePrenotazione;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface ClientePrenotazione {
+  /** @nullable */
+  id: number | null;
+  nome: string;
+  cognome: string;
+  /** @nullable */
+  email?: string | null;
+  /** @nullable */
+  telefono?: string | null;
+  /** @nullable */
+  codiceFiscale?: string | null;
+  /** @nullable */
+  indirizzo?: string | null;
+  /** @nullable */
+  note?: string | null;
+  /**
+   * affidabile | da_monitorare | problematico
+   * @nullable
+   */
+  etichetta?: string | null;
+  /** @nullable */
+  createdAt?: string | null;
+  /** @nullable */
+  updatedAt?: string | null;
 }
 
 export interface Contratto {
@@ -256,7 +287,12 @@ export interface ClienteStorico {
 
 export interface CreatePrenotazioneBody {
   vetturaId: number;
-  clienteId: number;
+  /** @nullable */
+  clienteId?: number | null;
+  /** @nullable */
+  nomeLibero?: string | null;
+  /** @nullable */
+  cognomeLibero?: string | null;
   dataInizio: string;
   dataFine: string;
   stato: string;
@@ -289,6 +325,10 @@ export interface UpdatePrenotazioneBody {
   vetturaId?: number | null;
   /** @nullable */
   clienteId?: number | null;
+  /** @nullable */
+  nomeLibero?: string | null;
+  /** @nullable */
+  cognomeLibero?: string | null;
   /** @nullable */
   dataInizio?: string | null;
   /** @nullable */
@@ -379,7 +419,8 @@ export interface DashboardStats {
 export interface PrenotazioneCalendario {
   id: number;
   vetturaId: number;
-  clienteId: number;
+  /** @nullable */
+  clienteId: number | null;
   dataInizio: string;
   dataFine: string;
   stato: string;
