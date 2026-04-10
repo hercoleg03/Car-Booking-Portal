@@ -19,6 +19,7 @@ warn()    { echo -e "${YELLOW}[WARN]${NC} $1"; }
 error()   { echo -e "${RED}[ERRORE]${NC} $1"; exit 1; }
 
 APP_DIR="/var/www/autoflotta"
+REPO="https://github.com/hercoleg03/Car-Booking-Portal.git"
 
 echo ""
 echo "=============================================="
@@ -72,22 +73,29 @@ sudo -u postgres psql -c "CREATE DATABASE autoflotta OWNER autoflotta;" 2>/dev/n
 sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE autoflotta TO autoflotta;" > /dev/null
 success "PostgreSQL configurato (db: autoflotta)"
 
-# ── 5. nginx ───────────────────────────────────────────────
-info "Installazione nginx..."
-apt-get install -y nginx -qq
-success "nginx installato"
+# ── 5. nginx + git ────────────────────────────────────────
+info "Installazione nginx e git..."
+apt-get install -y nginx git -qq
+success "nginx e git installati"
 
-# ── 6. Dipendenze progetto ─────────────────────────────────
-if [ ! -d "$APP_DIR" ]; then
-  error "Cartella $APP_DIR non trovata. Copia prima il progetto sulla VPS."
+# ── 6. Clona repository da GitHub ─────────────────────────
+info "Download progetto da GitHub..."
+if [ -d "$APP_DIR/.git" ]; then
+  warn "Progetto già presente — aggiorno all'ultima versione"
+  cd "$APP_DIR" && git pull origin main
+else
+  rm -rf "$APP_DIR"
+  git clone "$REPO" "$APP_DIR"
 fi
+success "Progetto scaricato in $APP_DIR"
 
+# ── 7. Dipendenze progetto ─────────────────────────────────
 info "Installazione dipendenze npm..."
 cd "$APP_DIR"
 pnpm install --silent
 success "Dipendenze installate"
 
-# ── 7. File .env ───────────────────────────────────────────
+# ── 8. File .env ───────────────────────────────────────────
 info "Creazione file .env..."
 cat > "$APP_DIR/artifacts/api-server/.env" <<EOF
 DATABASE_URL=postgresql://autoflotta:${DB_PASS}@localhost:5432/autoflotta
@@ -100,24 +108,24 @@ EOF
 chmod 600 "$APP_DIR/artifacts/api-server/.env"
 success "File .env creato"
 
-# ── 8. Migration database ──────────────────────────────────
+# ── 9. Migration database ──────────────────────────────────
 info "Esecuzione migration database..."
 cd "$APP_DIR"
 export DATABASE_URL="postgresql://autoflotta:${DB_PASS}@localhost:5432/autoflotta"
 pnpm --filter @workspace/db run push
 success "Schema database applicato"
 
-# ── 9. Build frontend ──────────────────────────────────────
+# ── 10. Build frontend ─────────────────────────────────────
 info "Build frontend React..."
 pnpm --filter @workspace/concessionaria run build
 success "Frontend compilato"
 
-# ── 10. Build backend ──────────────────────────────────────
+# ── 11. Build backend ──────────────────────────────────────
 info "Build backend Node.js..."
 pnpm --filter @workspace/api-server run build
 success "Backend compilato"
 
-# ── 11. PM2 ────────────────────────────────────────────────
+# ── 12. PM2 ────────────────────────────────────────────────
 info "Avvio backend con pm2..."
 cd "$APP_DIR/artifacts/api-server"
 pm2 delete autoflotta-api 2>/dev/null || true
@@ -126,7 +134,7 @@ pm2 save
 pm2 startup systemd -u root --hp /root | tail -1 | bash
 success "Backend avviato con pm2"
 
-# ── 12. nginx ──────────────────────────────────────────────
+# ── 13. nginx ──────────────────────────────────────────────
 info "Configurazione nginx..."
 cat > /etc/nginx/sites-available/autoflotta <<EOF
 server {
