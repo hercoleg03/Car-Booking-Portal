@@ -1,0 +1,31 @@
+stem.config.cjs && pm2 save
+[PM2] Applying action deleteProcessId on app [autoflotta-api](ids: [ 0 ])
+[PM2] [autoflotta-api](0) ✓
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+[PM2][WARN] Applications autoflotta-api not running, starting...
+[PM2] App [autoflotta-api] launched (1 instances)
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 0  │ autoflotta-api     │ cluster  │ 0    │ online    │ 0%       │ 39.5mb   │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+[PM2] Saving current process list...
+[PM2] Successfully saved in /root/.pm2/dump.pm2
+root@racknerd-deb9976:/var/www/autoflotta# pm2 status && pm2 logs autoflotta-api                                                                                                                                                              --lines 5 --nostream
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 0  │ autoflotta-api     │ cluster  │ 0    │ online    │ 0%       │ 114.1mb  │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+[TAILING] Tailing last 5 lines for [autoflotta-api] process (change the value wi                                                                                                                                                             th --lines option)
+/root/.pm2/logs/autoflotta-api-out-0.log last 5 lines:
+/root/.pm2/logs/autoflotta-api-error-0.log last 5 lines:
+0|autoflot | You have triggered an unhandledRejection, you may have forgotten to                                                                                                                                                              catch a Promise rejection:
+0|autoflot | Error: DATABASE_URL must be set. Did you forget to provision a data                                                                                                                                                             base?
+0|autoflot |     at file:///var/www/autoflotta/lib/db/src/index.ts:8:9
+0|autoflot |     at ModuleJob.run (node:internal/modules/esm/module_job:325:25)
+0|autoflot |     at ModuleLoader.import (node:internal/modules/esm/loader:606:24                                                                                                                                                             )
+
+root@racknerd-deb9976:/var/www/autoflotta#
