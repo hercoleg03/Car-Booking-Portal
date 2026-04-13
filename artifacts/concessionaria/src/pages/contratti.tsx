@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useListContratti, useCreateContratto, getListContrattiQueryKey, useListVetture, useListClienti, useUpdateContratto } from "@workspace/api-client-react";
-import { Plus, Search, FileText, CheckCircle2, Archive, Handshake } from "lucide-react";
+import { Plus, Search, FileText, CheckCircle2, Archive, Handshake, Download } from "lucide-react";
+import { generaContrattoNoleggioPDF } from "@/lib/genera-contratto-pdf";
 import { useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -232,11 +233,23 @@ export default function Contratti() {
                     )}
                   </TableCell>
                   <TableCell className="text-right">
-                    {!c.archiviato && (
-                      <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground gap-2" onClick={() => handleArchivia(c.id)}>
-                        <Archive className="w-4 h-4" /> Archivia
+                    <div className="flex items-center justify-end gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-500/10 gap-1.5"
+                        onClick={() => generaContrattoNoleggioPDF(c as any)}
+                        title="Scarica contratto PDF"
+                      >
+                        <Download className="w-4 h-4" />
+                        PDF
                       </Button>
-                    )}
+                      {!c.archiviato && (
+                        <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground gap-2" onClick={() => handleArchivia(c.id)}>
+                          <Archive className="w-4 h-4" /> Archivia
+                        </Button>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
