@@ -1,0 +1,60 @@
+bash: syntax error near unexpected token `('
+length:: command not found
+severity:: command not found
+code:: command not found
+detail:: command not found
+hint:: command not found
+position:: command not found
+internalPosition:: command not found
+internalQuery:: command not found
+where:: command not found
+schema:: command not found
+table:: command not found
+Command 'column:' not found, did you mean:
+  command 'columns' from deb autogen (1:5.18.16-5)
+  command 'column' from deb bsdextrautils (2.39.3-9ubuntu6.5)
+Try: apt install <deb name>
+dataType:: command not found
+constraint:: command not found
+Command 'file:' not found, did you mean:
+  command 'file' from deb file (1:5.45-2)
+  command 'file2' from deb file-kanji (1.1-20)
+Try: apt install <deb name>
+line:: command not found
+routine:: command not found
+-bash: syntax error near unexpected token `}'
+-bash: root@racknerd-deb9976:/var/www/autoflotta#: No such file or directory
+{"ok":true,"username":"admin"}<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Internal Server Error</pre>
+</body>
+</html>
+
+HTTP: 500
+-bash: syntax error near unexpected token `('
+-bash: syntax error near unexpected token `('
+-bash: !DOCTYPE: event not found
+-bash: syntax error near unexpected token `newline'
+-bash: syntax error near unexpected token `newline'
+-bash: syntax error near unexpected token `newline'
+-bash: syntax error near unexpected token `newline'
+-bash: syntax error near unexpected token `newline'
+-bash: syntax error near unexpected token `newline'
+-bash: syntax error near unexpected token `newline'
+-bash: syntax error near unexpected token `newline'
+-bash: syntax error near unexpected token `newline'
+HTTP:: command not found
+-bash: root@racknerd-deb9976:/var/www/autoflotta#: No such file or directory
+      DATABASE_URL: "postgresql://autoflotta:AutoFlotta2025!@localhost:5432/autoflotta",
+                              List of roles
+ Role name  |                         Attributes
+------------+------------------------------------------------------------
+ autoflotta |
+ postgres   | Superuser, Create role, Create DB, Replication, Bypass RLS
+
+root@racknerd-deb9976:/var/www/autoflotta#
