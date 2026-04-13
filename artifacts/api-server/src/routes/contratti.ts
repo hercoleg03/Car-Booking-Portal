@@ -22,6 +22,8 @@ const withJoin = () =>
       vetturaId: contrattiTable.vetturaId,
       clienteId: contrattiTable.clienteId,
       prenotazioneId: contrattiTable.prenotazioneId,
+      nomeLibero: contrattiTable.nomeLibero,
+      cognomeLibero: contrattiTable.cognomeLibero,
       numero: contrattiTable.numero,
       tipo: contrattiTable.tipo,
       dataContratto: contrattiTable.dataContratto,
@@ -67,7 +69,7 @@ const mapContratto = (c: Awaited<ReturnType<typeof withJoin>>[0]) => ({
   ...c,
   importo: c.importo ? parseFloat(c.importo) : null,
   vettura: c.vettura ? { ...c.vettura, prezzo: c.vettura.prezzo ? parseFloat(c.vettura.prezzo) : null } : c.vettura,
-  cliente: c.cliente,
+  cliente: c.cliente ?? { id: null, nome: c.nomeLibero ?? "", cognome: c.cognomeLibero ?? "", email: null, telefono: null, codiceFiscale: null, indirizzo: null, note: null, createdAt: new Date(), updatedAt: new Date() },
 });
 
 router.get("/contratti", async (req, res): Promise<void> => {
@@ -103,6 +105,7 @@ router.post("/contratti", async (req, res): Promise<void> => {
   const { importo, ...rest } = parsed.data;
   const [inserted] = await db.insert(contrattiTable).values({
     ...rest,
+    clienteId: rest.clienteId ?? null,
     importo: importo != null ? String(importo) : null,
   }).returning();
 
@@ -141,9 +144,8 @@ router.patch("/contratti/:id", async (req, res): Promise<void> => {
 
   const updateData: Record<string, unknown> = {};
   const { importo, ...rest } = parsed.data;
-  Object.entries(rest).forEach(([k, v]) => { if (v !== null && v !== undefined) updateData[k] = v; });
+  Object.entries(rest).forEach(([k, v]) => { if (v !== undefined) updateData[k] = v; });
   if (importo !== null && importo !== undefined) updateData["importo"] = String(importo);
-  // Allow explicit false for archiviato
   if (parsed.data.archiviato !== null && parsed.data.archiviato !== undefined) updateData["archiviato"] = parsed.data.archiviato;
 
   const updated = await db

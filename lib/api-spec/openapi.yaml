@@ -1193,9 +1193,13 @@ components:
         vetturaId:
           type: integer
         clienteId:
-          type: integer
+          type: ["integer", "null"]
         prenotazioneId:
           type: ["integer", "null"]
+        nomeLibero:
+          type: ["string", "null"]
+        cognomeLibero:
+          type: ["string", "null"]
         numero:
           type: string
         tipo:
@@ -1223,7 +1227,6 @@ components:
       required:
         - id
         - vetturaId
-        - clienteId
         - numero
         - tipo
         - dataContratto
@@ -1239,9 +1242,13 @@ components:
         vetturaId:
           type: integer
         clienteId:
-          type: integer
+          type: ["integer", "null"]
         prenotazioneId:
           type: ["integer", "null"]
+        nomeLibero:
+          type: ["string", "null"]
+        cognomeLibero:
+          type: ["string", "null"]
         numero:
           type: string
         tipo:
@@ -1257,7 +1264,6 @@ components:
           type: ["string", "null"]
       required:
         - vetturaId
-        - clienteId
         - numero
         - tipo
         - dataContratto
@@ -1266,6 +1272,12 @@ components:
     UpdateContrattoBody:
       type: object
       properties:
+        clienteId:
+          type: ["integer", "null"]
+        nomeLibero:
+          type: ["string", "null"]
+        cognomeLibero:
+          type: ["string", "null"]
         numero:
           type: ["string", "null"]
         tipo:

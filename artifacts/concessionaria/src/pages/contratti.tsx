@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useSearch } from "wouter";
 import { useListContratti, useCreateContratto, getListContrattiQueryKey, useListVetture, useListClienti, useUpdateContratto, useListPrenotazioni } from "@workspace/api-client-react";
-import { Plus, Search, FileText, CheckCircle2, Archive, Handshake, Download, CalendarClock } from "lucide-react";
+import { Plus, FileText, Archive, Download, CalendarClock, User, UserPlus } from "lucide-react";
 import { generaContrattoNoleggioPDF } from "@/lib/genera-contratto-pdf";
 import { useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -22,7 +22,10 @@ import { useToast } from "@/hooks/use-toast";
 const contrattoSchema = z.object({
   prenotazioneId: z.coerce.number().optional().nullable(),
   vetturaId: z.coerce.number().min(1, "Vettura richiesta"),
-  clienteId: z.coerce.number().min(1, "Cliente richiesto"),
+  clienteId: z.coerce.number().optional().nullable(),
+  nomeLibero: z.string().optional().nullable(),
+  cognomeLibero: z.string().optional().nullable(),
+  nomeLiberoMode: z.boolean(),
   numero: z.string().min(1, "Numero contratto richiesto"),
   tipo: z.enum(["vendita", "noleggio", "leasing", "permuta"]),
   dataContratto: z.string(),
@@ -55,14 +58,19 @@ export default function Contratti() {
     defaultValues: {
       prenotazioneId: null,
       vetturaId: 0,
-      clienteId: 0,
+      clienteId: null,
+      nomeLibero: "",
+      cognomeLibero: "",
+      nomeLiberoMode: false,
       numero: "",
       tipo: "noleggio",
       dataContratto: new Date().toISOString().split("T")[0],
-      importo: 0,
+      importo: null,
       note: ""
     }
   });
+
+  const nomeLiberoMode = form.watch("nomeLiberoMode");
 
   useEffect(() => {
     if (!prenotazioni) return;
@@ -80,20 +88,44 @@ export default function Contratti() {
     if (!p) return;
     form.setValue("prenotazioneId", id);
     if (p.vetturaId) form.setValue("vetturaId", p.vetturaId);
-    if (p.clienteId) form.setValue("clienteId", p.clienteId);
+    if (p.clienteId) {
+      form.setValue("clienteId", p.clienteId);
+      form.setValue("nomeLiberoMode", false);
+    } else if ((p as any).nomeLibero) {
+      form.setValue("nomeLiberoMode", true);
+      form.setValue("nomeLibero", (p as any).nomeLibero ?? "");
+      form.setValue("cognomeLibero", (p as any).cognomeLibero ?? "");
+    }
     form.setValue("tipo", "noleggio");
-    if (p.prezzoTotale) form.setValue("importo", p.prezzoTotale);
+    if ((p as any).prezzoTotale) form.setValue("importo", (p as any).prezzoTotale);
     form.setValue("dataContratto", (p.dataInizio as string).split("T")[0]);
   }
 
   function onSubmit(data: ContrattoFormValues) {
+    if (data.nomeLiberoMode) {
+      if (!data.nomeLibero?.trim() && !data.cognomeLibero?.trim()) {
+        toast({ title: "Inserisci nome o cognome", variant: "destructive" });
+        return;
+      }
+    } else {
+      if (!data.clienteId || data.clienteId <= 0) {
+        toast({ title: "Seleziona un cliente", variant: "destructive" });
+        return;
+      }
+    }
+
+    const { nomeLiberoMode, ...rest } = data;
+
     createContratto.mutate({ 
       data: { 
-        ...data, 
+        ...rest,
+        clienteId: nomeLiberoMode ? null : (rest.clienteId ?? null),
+        nomeLibero: nomeLiberoMode ? (rest.nomeLibero ?? null) : null,
+        cognomeLibero: nomeLiberoMode ? (rest.cognomeLibero ?? null) : null,
         archiviato: false, 
-        dataContratto: new Date(data.dataContratto).toISOString(),
-        prenotazioneId: data.prenotazioneId ?? null,
-      } 
+        dataContratto: new Date(rest.dataContratto).toISOString(),
+        prenotazioneId: rest.prenotazioneId ?? null,
+      } as any
     }, {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getListContrattiQueryKey() });
@@ -101,7 +133,7 @@ export default function Contratti() {
         form.reset();
         toast({ title: "Contratto creato" });
       },
-      onError: () => toast({ title: "Errore", variant: "destructive" })
+      onError: () => toast({ title: "Errore nella creazione", variant: "destructive" })
     });
   }
 
@@ -114,6 +146,12 @@ export default function Contratti() {
     });
   }
 
+  function nomeCliente(c: any): string {
+    if (c.nomeLibero || c.cognomeLibero) return `${c.nomeLibero ?? ""} ${c.cognomeLibero ?? ""}`.trim();
+    if (c.cliente?.nome || c.cliente?.cognome) return `${c.cliente.nome ?? ""} ${c.cliente.cognome ?? ""}`.trim();
+    return "—";
+  }
+
   return (
     <div className="p-8 flex flex-col h-full overflow-hidden">
       <div className="flex justify-between items-center mb-6 shrink-0">
@@ -122,7 +160,10 @@ export default function Contratti() {
           <p className="text-muted-foreground mt-1">Tracciamento vendite, noleggi e pratiche.</p>
         </div>
         
-        <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
+        <Dialog open={isAddOpen} onOpenChange={(open) => {
+          setIsAddOpen(open);
+          if (!open) form.reset();
+        }}>
           <DialogTrigger asChild>
             <Button className="gap-2">
               <Plus className="h-4 w-4" /> Nuovo Contratto
@@ -149,7 +190,7 @@ export default function Contratti() {
                       <SelectContent>
                         {prenotazioni?.map((p: any) => (
                           <SelectItem key={p.id} value={String(p.id)}>
-                            {p.vettura?.marca} {p.vettura?.modello} — {p.cliente?.cognome} {p.cliente?.nome} — {new Date(p.dataInizio).toLocaleDateString("it-IT")} → {new Date(p.dataFine).toLocaleDateString("it-IT")}
+                            {p.vettura?.marca} {p.vettura?.modello} — {p.cliente?.cognome ?? p.nomeLibero} {p.cliente?.nome ?? p.cognomeLibero} — {new Date(p.dataInizio).toLocaleDateString("it-IT")} → {new Date(p.dataFine).toLocaleDateString("it-IT")}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -181,19 +222,52 @@ export default function Contratti() {
                     <FormItem><FormLabel>Data</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>
                   )} />
                 </div>
-                
-                <FormField control={form.control} name="clienteId" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Cliente</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value?.toString()}>
-                      <FormControl><SelectTrigger><SelectValue placeholder="Seleziona cliente" /></SelectTrigger></FormControl>
-                      <SelectContent>
-                        {clienti?.map(c => <SelectItem key={c.id} value={c.id.toString()}>{c.nome} {c.cognome} ({c.codiceFiscale})</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )} />
+
+                {/* Cliente — toggle tra salvato e nome libero */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium leading-none">Cliente</span>
+                    <div className="flex rounded-md border text-xs overflow-hidden">
+                      <button
+                        type="button"
+                        onClick={() => form.setValue("nomeLiberoMode", false)}
+                        className={`flex items-center gap-1 px-2.5 py-1 font-medium transition-colors ${!nomeLiberoMode ? "bg-foreground text-background" : "hover:bg-muted"}`}
+                      >
+                        <User className="w-3 h-3" /> Salvato
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => form.setValue("nomeLiberoMode", true)}
+                        className={`flex items-center gap-1 px-2.5 py-1 font-medium transition-colors border-l ${nomeLiberoMode ? "bg-foreground text-background" : "hover:bg-muted"}`}
+                      >
+                        <UserPlus className="w-3 h-3" /> Nome libero
+                      </button>
+                    </div>
+                  </div>
+
+                  {!nomeLiberoMode ? (
+                    <FormField control={form.control} name="clienteId" render={({ field }) => (
+                      <FormItem>
+                        <Select onValueChange={(v) => field.onChange(parseInt(v))} value={field.value?.toString() ?? ""}>
+                          <FormControl><SelectTrigger><SelectValue placeholder="Seleziona cliente" /></SelectTrigger></FormControl>
+                          <SelectContent>
+                            {clienti?.map(c => <SelectItem key={c.id} value={c.id.toString()}>{c.nome} {c.cognome} ({c.codiceFiscale})</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                  ) : (
+                    <div className="grid grid-cols-2 gap-3">
+                      <FormField control={form.control} name="nomeLibero" render={({ field }) => (
+                        <FormItem><FormControl><Input placeholder="Nome" {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem>
+                      )} />
+                      <FormField control={form.control} name="cognomeLibero" render={({ field }) => (
+                        <FormItem><FormControl><Input placeholder="Cognome" {...field} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem>
+                      )} />
+                    </div>
+                  )}
+                </div>
 
                 <FormField control={form.control} name="vetturaId" render={({ field }) => (
                   <FormItem>
@@ -209,7 +283,7 @@ export default function Contratti() {
                 )} />
 
                 <FormField control={form.control} name="importo" render={({ field }) => (
-                  <FormItem><FormLabel>Importo (€)</FormLabel><FormControl><Input type="number" {...field} value={field.value || ""} /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel>Importo (€)</FormLabel><FormControl><Input type="number" {...field} value={field.value ?? ""} onChange={e => field.onChange(e.target.value === "" ? null : e.target.value)} /></FormControl><FormMessage /></FormItem>
                 )} />
 
                 <DialogFooter className="mt-6">
@@ -280,12 +354,17 @@ export default function Contratti() {
                     })()}
                   </TableCell>
                   <TableCell>
-                    <div className="font-medium">{c.cliente.nome} {c.cliente.cognome}</div>
-                    <div className="text-sm text-muted-foreground font-mono">{c.cliente.codiceFiscale}</div>
+                    <div className="font-medium">{nomeCliente(c)}</div>
+                    {(c as any).cliente?.codiceFiscale && (
+                      <div className="text-sm text-muted-foreground font-mono">{(c as any).cliente.codiceFiscale}</div>
+                    )}
+                    {((c as any).nomeLibero || (c as any).cognomeLibero) && (
+                      <div className="text-[11px] text-muted-foreground italic">nome libero</div>
+                    )}
                   </TableCell>
                   <TableCell>
-                    <div className="font-medium">{c.vettura.marca} {c.vettura.modello}</div>
-                    <div className="text-sm text-muted-foreground font-mono">{c.vettura.targa}</div>
+                    <div className="font-medium">{(c as any).vettura?.marca} {(c as any).vettura?.modello}</div>
+                    <div className="text-sm text-muted-foreground font-mono">{(c as any).vettura?.targa}</div>
                   </TableCell>
                   <TableCell className="font-medium">
                     {c.importo ? `€ ${c.importo.toLocaleString()}` : '-'}

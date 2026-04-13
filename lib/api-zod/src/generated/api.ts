@@ -229,8 +229,10 @@ export const GetVetturaStoricoResponse = zod.object({
     zod.object({
       id: zod.number(),
       vetturaId: zod.number(),
-      clienteId: zod.number(),
+      clienteId: zod.number().nullish(),
       prenotazioneId: zod.number().nullish(),
+      nomeLibero: zod.string().nullish(),
+      cognomeLibero: zod.string().nullish(),
       numero: zod.string(),
       tipo: zod.string().describe("vendita | noleggio | leasing | permuta"),
       dataContratto: zod.coerce.date(),
@@ -670,8 +672,10 @@ export const GetClienteStoricoResponse = zod.object({
     zod.object({
       id: zod.number(),
       vetturaId: zod.number(),
-      clienteId: zod.number(),
+      clienteId: zod.number().nullish(),
       prenotazioneId: zod.number().nullish(),
+      nomeLibero: zod.string().nullish(),
+      cognomeLibero: zod.string().nullish(),
       numero: zod.string(),
       tipo: zod.string().describe("vendita | noleggio | leasing | permuta"),
       dataContratto: zod.coerce.date(),
@@ -822,8 +826,10 @@ export const GetClienteProfiloResponse = zod.object({
     zod.object({
       id: zod.number(),
       vetturaId: zod.number(),
-      clienteId: zod.number(),
+      clienteId: zod.number().nullish(),
       prenotazioneId: zod.number().nullish(),
+      nomeLibero: zod.string().nullish(),
+      cognomeLibero: zod.string().nullish(),
       numero: zod.string(),
       tipo: zod.string().describe("vendita | noleggio | leasing | permuta"),
       dataContratto: zod.coerce.date(),
@@ -918,9 +924,7 @@ export const ListPrenotazioniQueryParams = zod.object({
 export const ListPrenotazioniResponseItem = zod.object({
   id: zod.number(),
   vetturaId: zod.number(),
-  clienteId: zod.number().nullable(),
-  nomeLibero: zod.string().nullish(),
-  cognomeLibero: zod.string().nullish(),
+  clienteId: zod.number(),
   dataInizio: zod.coerce.date(),
   dataFine: zod.coerce.date(),
   stato: zod.string().describe("attiva | completata | annullata | in_corso"),
@@ -955,7 +959,7 @@ export const ListPrenotazioniResponseItem = zod.object({
     updatedAt: zod.coerce.date(),
   }),
   cliente: zod.object({
-    id: zod.number().nullable(),
+    id: zod.number(),
     nome: zod.string(),
     cognome: zod.string(),
     email: zod.string().nullish(),
@@ -967,8 +971,8 @@ export const ListPrenotazioniResponseItem = zod.object({
       .string()
       .nullish()
       .describe("affidabile | da_monitorare | problematico"),
-    createdAt: zod.coerce.date().nullish(),
-    updatedAt: zod.coerce.date().nullish(),
+    createdAt: zod.coerce.date(),
+    updatedAt: zod.coerce.date(),
   }),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
@@ -980,9 +984,7 @@ export const ListPrenotazioniResponse = zod.array(ListPrenotazioniResponseItem);
  */
 export const CreatePrenotazioneBody = zod.object({
   vetturaId: zod.number(),
-  clienteId: zod.number().nullish(),
-  nomeLibero: zod.string().nullish(),
-  cognomeLibero: zod.string().nullish(),
+  clienteId: zod.number(),
   dataInizio: zod.coerce.date(),
   dataFine: zod.coerce.date(),
   stato: zod.string(),
@@ -1009,9 +1011,7 @@ export const GetPrenotazioneParams = zod.object({
 export const GetPrenotazioneResponse = zod.object({
   id: zod.number(),
   vetturaId: zod.number(),
-  clienteId: zod.number().nullable(),
-  nomeLibero: zod.string().nullish(),
-  cognomeLibero: zod.string().nullish(),
+  clienteId: zod.number(),
   dataInizio: zod.coerce.date(),
   dataFine: zod.coerce.date(),
   stato: zod.string().describe("attiva | completata | annullata | in_corso"),
@@ -1046,7 +1046,7 @@ export const GetPrenotazioneResponse = zod.object({
     updatedAt: zod.coerce.date(),
   }),
   cliente: zod.object({
-    id: zod.number().nullable(),
+    id: zod.number(),
     nome: zod.string(),
     cognome: zod.string(),
     email: zod.string().nullish(),
@@ -1058,8 +1058,8 @@ export const GetPrenotazioneResponse = zod.object({
       .string()
       .nullish()
       .describe("affidabile | da_monitorare | problematico"),
-    createdAt: zod.coerce.date().nullish(),
-    updatedAt: zod.coerce.date().nullish(),
+    createdAt: zod.coerce.date(),
+    updatedAt: zod.coerce.date(),
   }),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
@@ -1075,8 +1075,6 @@ export const UpdatePrenotazioneParams = zod.object({
 export const UpdatePrenotazioneBody = zod.object({
   vetturaId: zod.number().nullish(),
   clienteId: zod.number().nullish(),
-  nomeLibero: zod.string().nullish(),
-  cognomeLibero: zod.string().nullish(),
   dataInizio: zod.string().nullish(),
   dataFine: zod.string().nullish(),
   stato: zod.string().nullish(),
@@ -1096,9 +1094,7 @@ export const UpdatePrenotazioneBody = zod.object({
 export const UpdatePrenotazioneResponse = zod.object({
   id: zod.number(),
   vetturaId: zod.number(),
-  clienteId: zod.number().nullable(),
-  nomeLibero: zod.string().nullish(),
-  cognomeLibero: zod.string().nullish(),
+  clienteId: zod.number(),
   dataInizio: zod.coerce.date(),
   dataFine: zod.coerce.date(),
   stato: zod.string().describe("attiva | completata | annullata | in_corso"),
@@ -1133,7 +1129,7 @@ export const UpdatePrenotazioneResponse = zod.object({
     updatedAt: zod.coerce.date(),
   }),
   cliente: zod.object({
-    id: zod.number().nullable(),
+    id: zod.number(),
     nome: zod.string(),
     cognome: zod.string(),
     email: zod.string().nullish(),
@@ -1145,8 +1141,8 @@ export const UpdatePrenotazioneResponse = zod.object({
       .string()
       .nullish()
       .describe("affidabile | da_monitorare | problematico"),
-    createdAt: zod.coerce.date().nullish(),
-    updatedAt: zod.coerce.date().nullish(),
+    createdAt: zod.coerce.date(),
+    updatedAt: zod.coerce.date(),
   }),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
@@ -1171,8 +1167,10 @@ export const ListContrattiQueryParams = zod.object({
 export const ListContrattiResponseItem = zod.object({
   id: zod.number(),
   vetturaId: zod.number(),
-  clienteId: zod.number(),
+  clienteId: zod.number().nullish(),
   prenotazioneId: zod.number().nullish(),
+  nomeLibero: zod.string().nullish(),
+  cognomeLibero: zod.string().nullish(),
   numero: zod.string(),
   tipo: zod.string().describe("vendita | noleggio | leasing | permuta"),
   dataContratto: zod.coerce.date(),
@@ -1224,8 +1222,10 @@ export const ListContrattiResponse = zod.array(ListContrattiResponseItem);
  */
 export const CreateContrattoBody = zod.object({
   vetturaId: zod.number(),
-  clienteId: zod.number(),
+  clienteId: zod.number().nullish(),
   prenotazioneId: zod.number().nullish(),
+  nomeLibero: zod.string().nullish(),
+  cognomeLibero: zod.string().nullish(),
   numero: zod.string(),
   tipo: zod.string(),
   dataContratto: zod.coerce.date(),
@@ -1244,8 +1244,10 @@ export const GetContrattoParams = zod.object({
 export const GetContrattoResponse = zod.object({
   id: zod.number(),
   vetturaId: zod.number(),
-  clienteId: zod.number(),
+  clienteId: zod.number().nullish(),
   prenotazioneId: zod.number().nullish(),
+  nomeLibero: zod.string().nullish(),
+  cognomeLibero: zod.string().nullish(),
   numero: zod.string(),
   tipo: zod.string().describe("vendita | noleggio | leasing | permuta"),
   dataContratto: zod.coerce.date(),
@@ -1299,6 +1301,9 @@ export const UpdateContrattoParams = zod.object({
 });
 
 export const UpdateContrattoBody = zod.object({
+  clienteId: zod.number().nullish(),
+  nomeLibero: zod.string().nullish(),
+  cognomeLibero: zod.string().nullish(),
   numero: zod.string().nullish(),
   tipo: zod.string().nullish(),
   dataContratto: zod.string().nullish(),
@@ -1310,8 +1315,10 @@ export const UpdateContrattoBody = zod.object({
 export const UpdateContrattoResponse = zod.object({
   id: zod.number(),
   vetturaId: zod.number(),
-  clienteId: zod.number(),
+  clienteId: zod.number().nullish(),
   prenotazioneId: zod.number().nullish(),
+  nomeLibero: zod.string().nullish(),
+  cognomeLibero: zod.string().nullish(),
   numero: zod.string(),
   tipo: zod.string().describe("vendita | noleggio | leasing | permuta"),
   dataContratto: zod.coerce.date(),
@@ -1423,7 +1430,7 @@ export const GetPrenotazioniCalendarioQueryParams = zod.object({
 export const GetPrenotazioniCalendarioResponseItem = zod.object({
   id: zod.number(),
   vetturaId: zod.number(),
-  clienteId: zod.number().nullable(),
+  clienteId: zod.number(),
   dataInizio: zod.string(),
   dataFine: zod.string(),
   stato: zod.string(),

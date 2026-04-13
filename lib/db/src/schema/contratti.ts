@@ -8,8 +8,10 @@ import { prenotazioniTable } from "./prenotazioni";
 export const contrattiTable = pgTable("contratti", {
   id: serial("id").primaryKey(),
   vetturaId: integer("vettura_id").notNull().references(() => vettureTable.id),
-  clienteId: integer("cliente_id").notNull().references(() => clientiTable.id),
+  clienteId: integer("cliente_id").references(() => clientiTable.id),
   prenotazioneId: integer("prenotazione_id").references(() => prenotazioniTable.id),
+  nomeLibero: text("nome_libero"),
+  cognomeLibero: text("cognome_libero"),
   numero: text("numero").notNull(),
   tipo: text("tipo").notNull(), // vendita | noleggio | leasing | permuta
   dataContratto: text("data_contratto").notNull(), // YYYY-MM-DD

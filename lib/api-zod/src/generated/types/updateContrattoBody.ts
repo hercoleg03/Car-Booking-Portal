@@ -8,6 +8,12 @@
 
 export interface UpdateContrattoBody {
   /** @nullable */
+  clienteId?: number | null;
+  /** @nullable */
+  nomeLibero?: string | null;
+  /** @nullable */
+  cognomeLibero?: string | null;
+  /** @nullable */
   numero?: string | null;
   /** @nullable */
   tipo?: string | null;

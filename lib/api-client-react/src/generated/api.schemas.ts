@@ -102,12 +102,7 @@ export interface Cliente {
 export interface Prenotazione {
   id: number;
   vetturaId: number;
-  /** @nullable */
-  clienteId: number | null;
-  /** @nullable */
-  nomeLibero?: string | null;
-  /** @nullable */
-  cognomeLibero?: string | null;
+  clienteId: number;
   dataInizio: string;
   dataFine: string;
   /** attiva | completata | annullata | in_corso */
@@ -135,43 +130,22 @@ export interface Prenotazione {
   /** @nullable */
   prezzoTotale?: number | null;
   vettura: Vettura;
-  cliente: ClientePrenotazione;
+  cliente: Cliente;
   createdAt: string;
   updatedAt: string;
-}
-
-export interface ClientePrenotazione {
-  /** @nullable */
-  id: number | null;
-  nome: string;
-  cognome: string;
-  /** @nullable */
-  email?: string | null;
-  /** @nullable */
-  telefono?: string | null;
-  /** @nullable */
-  codiceFiscale?: string | null;
-  /** @nullable */
-  indirizzo?: string | null;
-  /** @nullable */
-  note?: string | null;
-  /**
-   * affidabile | da_monitorare | problematico
-   * @nullable
-   */
-  etichetta?: string | null;
-  /** @nullable */
-  createdAt?: string | null;
-  /** @nullable */
-  updatedAt?: string | null;
 }
 
 export interface Contratto {
   id: number;
   vetturaId: number;
-  clienteId: number;
+  /** @nullable */
+  clienteId?: number | null;
   /** @nullable */
   prenotazioneId?: number | null;
+  /** @nullable */
+  nomeLibero?: string | null;
+  /** @nullable */
+  cognomeLibero?: string | null;
   numero: string;
   /** vendita | noleggio | leasing | permuta */
   tipo: string;
@@ -287,12 +261,7 @@ export interface ClienteStorico {
 
 export interface CreatePrenotazioneBody {
   vetturaId: number;
-  /** @nullable */
-  clienteId?: number | null;
-  /** @nullable */
-  nomeLibero?: string | null;
-  /** @nullable */
-  cognomeLibero?: string | null;
+  clienteId: number;
   dataInizio: string;
   dataFine: string;
   stato: string;
@@ -326,10 +295,6 @@ export interface UpdatePrenotazioneBody {
   /** @nullable */
   clienteId?: number | null;
   /** @nullable */
-  nomeLibero?: string | null;
-  /** @nullable */
-  cognomeLibero?: string | null;
-  /** @nullable */
   dataInizio?: string | null;
   /** @nullable */
   dataFine?: string | null;
@@ -361,9 +326,14 @@ export interface UpdatePrenotazioneBody {
 
 export interface CreateContrattoBody {
   vetturaId: number;
-  clienteId: number;
+  /** @nullable */
+  clienteId?: number | null;
   /** @nullable */
   prenotazioneId?: number | null;
+  /** @nullable */
+  nomeLibero?: string | null;
+  /** @nullable */
+  cognomeLibero?: string | null;
   numero: string;
   tipo: string;
   dataContratto: string;
@@ -375,6 +345,12 @@ export interface CreateContrattoBody {
 }
 
 export interface UpdateContrattoBody {
+  /** @nullable */
+  clienteId?: number | null;
+  /** @nullable */
+  nomeLibero?: string | null;
+  /** @nullable */
+  cognomeLibero?: string | null;
   /** @nullable */
   numero?: string | null;
   /** @nullable */
@@ -419,8 +395,7 @@ export interface DashboardStats {
 export interface PrenotazioneCalendario {
   id: number;
   vetturaId: number;
-  /** @nullable */
-  clienteId: number | null;
+  clienteId: number;
   dataInizio: string;
   dataFine: string;
   stato: string;

@@ -8,9 +8,14 @@
 
 export interface CreateContrattoBody {
   vetturaId: number;
-  clienteId: number;
+  /** @nullable */
+  clienteId?: number | null;
   /** @nullable */
   prenotazioneId?: number | null;
+  /** @nullable */
+  nomeLibero?: string | null;
+  /** @nullable */
+  cognomeLibero?: string | null;
   numero: string;
   tipo: string;
   dataContratto: Date;
