@@ -1,0 +1,53 @@
+
+root@racknerd-deb9976:/var/www/autoflotta# ^C
+root@racknerd-deb9976:/var/www/autoflotta# git pull origin main
+remote: Enumerating objects: 40, done.
+remote: Counting objects: 100% (40/40), done.
+remote: Compressing objects: 100% (8/8), done.
+remote: Total 31 (delta 23), reused 31 (delta 23), pack-reused 0 (from 0)
+Unpacking objects: 100% (31/31), 64.18 KiB | 1.37 MiB/s, done.
+From https://github.com/hercoleg03/Car-Booking-Portal
+ * branch            main       -> FETCH_HEAD
+   748c12c..b2c6553  main       -> origin/main
+Updating 748c12c..b2c6553
+Fast-forward
+ artifacts/api-server/src/routes/vetture.ts                                 |  82 ++++++++++++++++++++++------------
+ ...oot-racknerd-deb9976-Verifica-cartella-uploads-ls-la-_1776074095707.txt |  46 +++++++++++++++++++
+ ...orkspace-concessionaria-0-0-0-build-var-www-autoflott_1775807183981.txt |  37 +++++++++++++++
+ ...sh-syntax-error-near-unexpected-token-length-command-_1776074441418.txt |  60 +++++++++++++++++++++++++
+ ...em-config-cjs-pm2-save-PM2-Applying-action-deleteProc_1775920758146.txt |  31 +++++++++++++
+ attached_assets/image_1775920658670.png                                    | Bin 0 -> 62473 bytes
+ scripts/vps-setup.sh                                                       |  13 +++---
+ 7 files changed, 233 insertions(+), 36 deletions(-)
+ create mode 100644 attached_assets/Pasted--root-racknerd-deb9976-Verifica-cartella-uploads-ls-la-_1776074095707.txt
+ create mode 100644 attached_assets/Pasted--workspace-concessionaria-0-0-0-build-var-www-autoflott_1775807183981.txt
+ create mode 100644 attached_assets/Pasted-bash-syntax-error-near-unexpected-token-length-command-_1776074441418.txt
+ create mode 100644 attached_assets/Pasted-stem-config-cjs-pm2-save-PM2-Applying-action-deleteProc_1775920758146.txt
+ create mode 100644 attached_assets/image_1775920658670.png
+root@racknerd-deb9976:/var/www/autoflotta# pnpm --filter @workspace/api-server run build && pm2 restart autoflotta-api
+
+> @workspace/api-server@0.0.0 build /var/www/autoflotta/artifacts/api-server
+> node ./build.mjs
+
+
+  dist/index.mjs                       2.7mb ⚠️
+  dist/pino-worker.mjs               153.4kb
+  dist/pino-file.mjs                 142.1kb
+  dist/pino-pretty.mjs               114.6kb
+  dist/thread-stream-worker.mjs        7.3kb
+  dist/index.mjs.map                   4.7mb
+  dist/pino-worker.mjs.map           256.9kb
+  dist/pino-file.mjs.map             229.0kb
+  dist/pino-pretty.mjs.map           203.9kb
+  dist/thread-stream-worker.mjs.map   12.0kb
+
+⚡ Done in 1320ms
+Use --update-env to update environment variables
+[PM2] Applying action restartProcessId on app [autoflotta-api](ids: [ 0 ])
+[PM2] [autoflotta-api](0) ✓
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 0  │ autoflotta-api     │ fork     │ 2    │ online    │ 0%       │ 19.6mb   │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+root@racknerd-deb9976:/var/www/autoflotta#
