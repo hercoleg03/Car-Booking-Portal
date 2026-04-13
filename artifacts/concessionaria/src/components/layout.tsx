@@ -24,9 +24,8 @@ import { CSS } from "@dnd-kit/utilities";
 const DEFAULT_NAV_ITEMS = [
   { href: "/dashboard",      label: "Dashboard",       icon: "LayoutDashboard", match: ["/", "/dashboard"] },
   { href: "/inventario",     label: "Inventario",      icon: "Car",             match: ["/inventario"] },
-  { href: "/calendario",     label: "Calendario",      icon: "Calendar",        match: ["/calendario"] },
-  { href: "/prenotazioni",   label: "Prenotazioni",    icon: "ClipboardList",   match: ["/prenotazioni"] },
   { href: "/contratti",      label: "Contratti",       icon: "FileText",        match: ["/contratti"] },
+  { href: "/calendario",     label: "Calendario",      icon: "Calendar",        match: ["/calendario"] },
   { href: "/clienti",        label: "Clienti",         icon: "Users",           match: ["/clienti"] },
   { href: "/storico-vetture",label: "Storico Vetture", icon: "History",         match: ["/storico-vetture"] },
   { href: "/manutenzioni",   label: "Manutenzioni",    icon: "Wrench",          match: ["/manutenzioni"] },

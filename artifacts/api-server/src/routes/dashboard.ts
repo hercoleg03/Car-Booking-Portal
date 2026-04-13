@@ -21,8 +21,8 @@ router.get("/dashboard/stats", async (_req, res): Promise<void> => {
   const [totaleVetture] = await db.select({ count: count() }).from(vettureTable);
   const [vettureDisponibili] = await db.select({ count: count() }).from(vettureTable).where(eq(vettureTable.disponibile, true));
   const [totaleClienti] = await db.select({ count: count() }).from(clientiTable);
-  const [prenotazioniAttive] = await db.select({ count: count() }).from(prenotazioniTable).where(eq(prenotazioniTable.stato, "attiva"));
-  const [vetturePrenotate] = await db.select({ count: count() }).from(prenotazioniTable).where(eq(prenotazioniTable.stato, "in_corso"));
+  const [prenotazioniAttive] = await db.select({ count: count() }).from(contrattiTable).where(eq(contrattiTable.stato, "attiva"));
+  const [vetturePrenotate] = await db.select({ count: count() }).from(contrattiTable).where(eq(contrattiTable.stato, "in_corso"));
   const [contrattiTotali] = await db.select({ count: count() }).from(contrattiTable);
   const [contrattiArchiviati] = await db.select({ count: count() }).from(contrattiTable).where(eq(contrattiTable.archiviato, true));
   const [contrattiAttivi] = await db.select({ count: count() }).from(contrattiTable).where(eq(contrattiTable.archiviato, false));
@@ -33,23 +33,23 @@ router.get("/dashboard/stats", async (_req, res): Promise<void> => {
   const ultimoMese = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(ultimoGiorno.getDate()).padStart(2, "0")}`;
   const [prenotazioniMese] = await db
     .select({ count: count() })
-    .from(prenotazioniTable)
-    .where(and(gte(prenotazioniTable.dataInizio, primoMese), lte(prenotazioniTable.dataFine, ultimoMese)));
+    .from(contrattiTable)
+    .where(and(gte(contrattiTable.dataInizio, primoMese), lte(contrattiTable.dataFine, ultimoMese)));
 
   const [vettureInRientroOggi] = await db
     .select({ count: count() })
-    .from(prenotazioniTable)
+    .from(contrattiTable)
     .where(and(
-      eq(prenotazioniTable.dataFine, today),
-      or(eq(prenotazioniTable.stato, "in_corso"), eq(prenotazioniTable.stato, "attiva"))
+      eq(contrattiTable.dataFine, today),
+      or(eq(contrattiTable.stato, "in_corso"), eq(contrattiTable.stato, "attiva"))
     ));
 
   const [prenotazioniInizioOggi] = await db
     .select({ count: count() })
-    .from(prenotazioniTable)
+    .from(contrattiTable)
     .where(and(
-      eq(prenotazioniTable.dataInizio, today),
-      or(eq(prenotazioniTable.stato, "attiva"), eq(prenotazioniTable.stato, "in_corso"))
+      eq(contrattiTable.dataInizio, today),
+      or(eq(contrattiTable.stato, "attiva"), eq(contrattiTable.stato, "in_corso"))
     ));
 
   const carburanteRows = await db
@@ -221,48 +221,49 @@ router.get("/dashboard/prenotazioni-calendario", async (req, res): Promise<void>
   const ultimoGiorno = new Date(anno, mese, 0);
   const ultimoGiornoStr = `${anno}-${String(mese).padStart(2, "0")}-${String(ultimoGiorno.getDate()).padStart(2, "0")}`;
 
-  const prenotazioni = await db
+  const contratti = await db
     .select({
-      id: prenotazioniTable.id,
-      vetturaId: prenotazioniTable.vetturaId,
-      clienteId: prenotazioniTable.clienteId,
-      nomeLibero: prenotazioniTable.nomeLibero,
-      cognomeLibero: prenotazioniTable.cognomeLibero,
-      dataInizio: prenotazioniTable.dataInizio,
-      dataFine: prenotazioniTable.dataFine,
-      stato: prenotazioniTable.stato,
+      id: contrattiTable.id,
+      vetturaId: contrattiTable.vetturaId,
+      clienteId: contrattiTable.clienteId,
+      nomeLibero: contrattiTable.nomeLibero,
+      cognomeLibero: contrattiTable.cognomeLibero,
+      dataInizio: contrattiTable.dataInizio,
+      dataFine: contrattiTable.dataFine,
+      stato: contrattiTable.stato,
+      tipo: contrattiTable.tipo,
       marca: vettureTable.marca,
       modello: vettureTable.modello,
       targa: vettureTable.targa,
       nomeCliente: clientiTable.nome,
       cognomeCliente: clientiTable.cognome,
     })
-    .from(prenotazioniTable)
-    .leftJoin(vettureTable, eq(prenotazioniTable.vetturaId, vettureTable.id))
-    .leftJoin(clientiTable, eq(prenotazioniTable.clienteId, clientiTable.id))
+    .from(contrattiTable)
+    .leftJoin(vettureTable, eq(contrattiTable.vetturaId, vettureTable.id))
+    .leftJoin(clientiTable, eq(contrattiTable.clienteId, clientiTable.id))
     .where(
       and(
-        lte(prenotazioniTable.dataInizio, ultimoGiornoStr),
-        gte(prenotazioniTable.dataFine, primoGiorno),
+        lte(contrattiTable.dataInizio, ultimoGiornoStr),
+        gte(contrattiTable.dataFine, primoGiorno),
       )
     )
-    .orderBy(prenotazioniTable.dataInizio);
+    .orderBy(contrattiTable.dataInizio);
 
   res.json(GetPrenotazioniCalendarioResponse.parse(
-    prenotazioni.map(p => {
-      const clienteNome = p.nomeCliente
-        ? `${p.nomeCliente ?? ""} ${p.cognomeCliente ?? ""}`.trim()
-        : `${p.nomeLibero ?? ""} ${p.cognomeLibero ?? ""}`.trim();
+    contratti.map(c => {
+      const clienteNome = c.nomeCliente
+        ? `${c.nomeCliente ?? ""} ${c.cognomeCliente ?? ""}`.trim()
+        : `${c.nomeLibero ?? ""} ${c.cognomeLibero ?? ""}`.trim();
       return {
-        id: p.id,
-        vetturaId: p.vetturaId,
-        clienteId: p.clienteId ?? null,
-        dataInizio: p.dataInizio,
-        dataFine: p.dataFine,
-        stato: p.stato,
-        vetturaNome: `${p.marca ?? ""} ${p.modello ?? ""}`.trim(),
+        id: c.id,
+        vetturaId: c.vetturaId,
+        clienteId: c.clienteId ?? null,
+        dataInizio: c.dataInizio ?? "",
+        dataFine: c.dataFine ?? "",
+        stato: c.stato ?? "attiva",
+        vetturaNome: `${c.marca ?? ""} ${c.modello ?? ""}`.trim(),
         clienteNome,
-        targa: p.targa ?? "",
+        targa: c.targa ?? "",
       };
     })
   ));

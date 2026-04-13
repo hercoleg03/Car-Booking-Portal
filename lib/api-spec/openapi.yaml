@@ -1234,8 +1234,6 @@ components:
           type: integer
         clienteId:
           type: ["integer", "null"]
-        prenotazioneId:
-          type: ["integer", "null"]
         nomeLibero:
           type: ["string", "null"]
         cognomeLibero:
@@ -1248,6 +1246,15 @@ components:
         dataContratto:
           type: string
           format: date
+        dataInizio:
+          type: ["string", "null"]
+          format: date
+        dataFine:
+          type: ["string", "null"]
+          format: date
+        stato:
+          type: ["string", "null"]
+          description: "attiva | in_corso | completata | annullata"
         importo:
           type: ["number", "null"]
         archiviato:
@@ -1257,7 +1264,35 @@ components:
         vettura:
           $ref: "#/components/schemas/Vettura"
         cliente:
-          $ref: "#/components/schemas/Cliente"
+          type: object
+          properties:
+            id:
+              type: ["integer", "null"]
+            nome:
+              type: string
+            cognome:
+              type: string
+            email:
+              type: ["string", "null"]
+            telefono:
+              type: ["string", "null"]
+            codiceFiscale:
+              type: ["string", "null"]
+            indirizzo:
+              type: ["string", "null"]
+            note:
+              type: ["string", "null"]
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
+          required:
+            - nome
+            - cognome
+            - createdAt
+            - updatedAt
         createdAt:
           type: string
           format: date-time
@@ -1283,8 +1318,6 @@ components:
           type: integer
         clienteId:
           type: ["integer", "null"]
-        prenotazioneId:
-          type: ["integer", "null"]
         nomeLibero:
           type: ["string", "null"]
         cognomeLibero:
@@ -1296,6 +1329,14 @@ components:
         dataContratto:
           type: string
           format: date
+        dataInizio:
+          type: ["string", "null"]
+          format: date
+        dataFine:
+          type: ["string", "null"]
+          format: date
+        stato:
+          type: ["string", "null"]
         importo:
           type: ["number", "null"]
         archiviato:
@@ -1323,6 +1364,12 @@ components:
         tipo:
           type: ["string", "null"]
         dataContratto:
+          type: ["string", "null"]
+        dataInizio:
+          type: ["string", "null"]
+        dataFine:
+          type: ["string", "null"]
+        stato:
           type: ["string", "null"]
         importo:
           type: ["number", "null"]

@@ -12,6 +12,7 @@ export * from "./clienteProfilo";
 export * from "./clienteProfiloStats";
 export * from "./clienteStorico";
 export * from "./contratto";
+export * from "./contrattoCliente";
 export * from "./createClienteBody";
 export * from "./createContrattoBody";
 export * from "./createManutenzioneBody";

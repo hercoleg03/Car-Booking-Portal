@@ -11,14 +11,18 @@ export interface CreateContrattoBody {
   /** @nullable */
   clienteId?: number | null;
   /** @nullable */
-  prenotazioneId?: number | null;
-  /** @nullable */
   nomeLibero?: string | null;
   /** @nullable */
   cognomeLibero?: string | null;
   numero: string;
   tipo: string;
   dataContratto: Date;
+  /** @nullable */
+  dataInizio?: Date | null;
+  /** @nullable */
+  dataFine?: Date | null;
+  /** @nullable */
+  stato?: string | null;
   /** @nullable */
   importo?: number | null;
   archiviato: boolean;

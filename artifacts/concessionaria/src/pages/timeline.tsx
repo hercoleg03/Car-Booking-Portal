@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useMemo, useEffect } from "react";
 import {
-  useListVetture, useListPrenotazioni, useListClienti,
-  useUpdatePrenotazione, getListPrenotazioniQueryKey, getListContrattiQueryKey,
+  useListVetture, useListContratti, useListClienti,
+  useUpdateContratto, getListContrattiQueryKey,
 } from "@workspace/api-client-react";
 import {
   addDays, addHours, startOfDay, format, parseISO,
@@ -88,11 +88,11 @@ export default function Timeline() {
     startX: number;
   } | null>(null);
 
-  const { data: vetture = [] }      = useListVetture();
-  const { data: prenotazioni = [] } = useListPrenotazioni();
-  const { data: clienti = [] }      = useListClienti();
-  const updatePren                  = useUpdatePrenotazione();
-  const queryClient                 = useQueryClient();
+  const { data: vetture = [] }    = useListVetture();
+  const { data: contratti = [] }  = useListContratti();
+  const { data: clienti = [] }    = useListClienti();
+  const updateContratto           = useUpdateContratto();
+  const queryClient               = useQueryClient();
   const { toast }                   = useToast();
 
   const cfg = ZOOM[zoom];
@@ -237,23 +237,20 @@ export default function Timeline() {
     const newFine   = format(addDays(parseISO(drag.originalFine),   giorni), "yyyy-MM-dd");
 
     try {
-      await updatePren.mutateAsync({
+      await updateContratto.mutateAsync({
         id: drag.bookingId,
         data: { dataInizio: newInizio, dataFine: newFine } as never,
       });
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: getListPrenotazioniQueryKey() }),
-        queryClient.invalidateQueries({ queryKey: getListContrattiQueryKey() }),
-      ]);
+      await queryClient.invalidateQueries({ queryKey: getListContrattiQueryKey() });
       const dir = giorni > 0 ? "avanti" : "indietro";
       toast({
-        title: "Prenotazione spostata",
-        description: `${Math.abs(giorni)} giorn${Math.abs(giorni) === 1 ? "o" : "i"} ${dir} — contratti aggiornati`,
+        title: "Contratto spostato",
+        description: `${Math.abs(giorni)} giorn${Math.abs(giorni) === 1 ? "o" : "i"} ${dir}`,
       });
     } catch {
-      toast({ title: "Errore", description: "Impossibile aggiornare la prenotazione", variant: "destructive" });
+      toast({ title: "Errore", description: "Impossibile aggiornare il contratto", variant: "destructive" });
     }
-  }, [dragOffsetPx, msPerPx, updatePren, queryClient, toast]);
+  }, [dragOffsetPx, msPerPx, updateContratto, queryClient, toast]);
 
   useEffect(() => {
     window.addEventListener("mousemove", handleMouseMove);
@@ -266,7 +263,7 @@ export default function Timeline() {
 
   // ─── Tooltip data ─────────────────────────────────────────────────────────
 
-  const tooltipPren = tooltipId ? prenotazioni.find(p => p.id === tooltipId) : null;
+  const tooltipPren = tooltipId ? contratti.find(p => p.id === tooltipId) : null;
 
   // ─── Render ───────────────────────────────────────────────────────────────
 
@@ -387,7 +384,7 @@ export default function Timeline() {
 
           {/* Rows */}
           {vetture.map((v, vi) => {
-            const vPren = prenotazioni.filter(p => p.vetturaId === v.id);
+            const vPren = contratti.filter(p => p.vetturaId === v.id && (p.dataInizio || p.dataFine));
             const isAlt = vi % 2 === 1;
 
             return (
@@ -454,8 +451,10 @@ export default function Timeline() {
                     const bar = getBarStyle(p.dataInizio!, p.dataFine!, extraPx);
                     if (!bar) return null;
 
-                    const colors = STATUS_STYLE[p.stato ?? "attiva"] ?? STATUS_STYLE.attiva;
-                    const nomeCliente = clienteMap[p.clienteId!] ?? `#${p.clienteId}`;
+                    const colors = STATUS_STYLE[(p as any).stato ?? "attiva"] ?? STATUS_STYLE.attiva;
+                    const nomeCliente = (p as any).nomeLibero || (p as any).cognomeLibero
+                      ? `${(p as any).nomeLibero ?? ""} ${(p as any).cognomeLibero ?? ""}`.trim()
+                      : clienteMap[p.clienteId!] ?? `N.${p.numero}`;
                     const giorni = differenceInCalendarDays(parseISO(p.dataFine!), parseISO(p.dataInizio!)) + 1;
 
                     return (
@@ -525,7 +524,9 @@ export default function Timeline() {
           style={{ left: tooltipPos.x + 14, top: tooltipPos.y - 90 }}
         >
           <div className="font-bold text-sm">
-            {clienteMap[tooltipPren.clienteId!] ?? `Cliente #${tooltipPren.clienteId}`}
+            {(tooltipPren as any).nomeLibero || (tooltipPren as any).cognomeLibero
+              ? `${(tooltipPren as any).nomeLibero ?? ""} ${(tooltipPren as any).cognomeLibero ?? ""}`.trim()
+              : clienteMap[tooltipPren.clienteId!] ?? `N.${tooltipPren.numero}`}
           </div>
           <div className="text-muted-foreground">
             {format(parseISO(tooltipPren.dataInizio!), "d MMM", { locale: it })}
@@ -539,16 +540,16 @@ export default function Timeline() {
               variant="outline"
               className={cn(
                 "text-[10px] capitalize border",
-                STATUS_STYLE[tooltipPren.stato ?? "attiva"]?.bg,
-                STATUS_STYLE[tooltipPren.stato ?? "attiva"]?.text,
+                STATUS_STYLE[(tooltipPren as any).stato ?? "attiva"]?.bg,
+                STATUS_STYLE[(tooltipPren as any).stato ?? "attiva"]?.text,
                 "border-transparent",
               )}
             >
-              {tooltipPren.stato}
+              {(tooltipPren as any).stato}
             </Badge>
-            {tooltipPren.prezzoTotale != null && (
+            {(tooltipPren as any).importo != null && (
               <span className="text-muted-foreground">
-                €{Number(tooltipPren.prezzoTotale).toFixed(2)}
+                €{Number((tooltipPren as any).importo).toFixed(2)}
               </span>
             )}
           </div>

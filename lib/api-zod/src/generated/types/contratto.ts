@@ -5,7 +5,7 @@
  * API specification for Gestione Prenotazioni Concessionaria
  * OpenAPI spec version: 0.1.0
  */
-import type { Cliente } from "./cliente";
+import type { ContrattoCliente } from "./contrattoCliente";
 import type { Vettura } from "./vettura";
 
 export interface Contratto {
@@ -13,8 +13,6 @@ export interface Contratto {
   vetturaId: number;
   /** @nullable */
   clienteId?: number | null;
-  /** @nullable */
-  prenotazioneId?: number | null;
   /** @nullable */
   nomeLibero?: string | null;
   /** @nullable */
@@ -24,12 +22,21 @@ export interface Contratto {
   tipo: string;
   dataContratto: Date;
   /** @nullable */
+  dataInizio?: Date | null;
+  /** @nullable */
+  dataFine?: Date | null;
+  /**
+   * attiva | in_corso | completata | annullata
+   * @nullable
+   */
+  stato?: string | null;
+  /** @nullable */
   importo?: number | null;
   archiviato: boolean;
   /** @nullable */
   note?: string | null;
   vettura: Vettura;
-  cliente: Cliente;
+  cliente: ContrattoCliente;
   createdAt: Date;
   updatedAt: Date;
 }

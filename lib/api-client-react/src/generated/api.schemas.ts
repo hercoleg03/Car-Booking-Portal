@@ -138,8 +138,9 @@ export interface Prenotazione {
   updatedAt: string;
 }
 
-export interface Cliente {
-  id: number;
+export type ContrattoCliente = {
+  /** @nullable */
+  id?: number | null;
   nome: string;
   cognome: string;
   /** @nullable */
@@ -152,22 +153,15 @@ export interface Cliente {
   indirizzo?: string | null;
   /** @nullable */
   note?: string | null;
-  /**
-   * affidabile | da_monitorare | problematico
-   * @nullable
-   */
-  etichetta?: string | null;
   createdAt: string;
   updatedAt: string;
-}
+};
 
 export interface Contratto {
   id: number;
   vetturaId: number;
   /** @nullable */
   clienteId?: number | null;
-  /** @nullable */
-  prenotazioneId?: number | null;
   /** @nullable */
   nomeLibero?: string | null;
   /** @nullable */
@@ -177,12 +171,21 @@ export interface Contratto {
   tipo: string;
   dataContratto: string;
   /** @nullable */
+  dataInizio?: string | null;
+  /** @nullable */
+  dataFine?: string | null;
+  /**
+   * attiva | in_corso | completata | annullata
+   * @nullable
+   */
+  stato?: string | null;
+  /** @nullable */
   importo?: number | null;
   archiviato: boolean;
   /** @nullable */
   note?: string | null;
   vettura: Vettura;
-  cliente: Cliente;
+  cliente: ContrattoCliente;
   createdAt: string;
   updatedAt: string;
 }
@@ -241,6 +244,29 @@ export interface UpdateManutenzioneBody {
   prossimaManutenzione?: string | null;
   /** @nullable */
   note?: string | null;
+}
+
+export interface Cliente {
+  id: number;
+  nome: string;
+  cognome: string;
+  /** @nullable */
+  email?: string | null;
+  /** @nullable */
+  telefono?: string | null;
+  /** @nullable */
+  codiceFiscale?: string | null;
+  /** @nullable */
+  indirizzo?: string | null;
+  /** @nullable */
+  note?: string | null;
+  /**
+   * affidabile | da_monitorare | problematico
+   * @nullable
+   */
+  etichetta?: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface CreateClienteBody {
@@ -364,14 +390,18 @@ export interface CreateContrattoBody {
   /** @nullable */
   clienteId?: number | null;
   /** @nullable */
-  prenotazioneId?: number | null;
-  /** @nullable */
   nomeLibero?: string | null;
   /** @nullable */
   cognomeLibero?: string | null;
   numero: string;
   tipo: string;
   dataContratto: string;
+  /** @nullable */
+  dataInizio?: string | null;
+  /** @nullable */
+  dataFine?: string | null;
+  /** @nullable */
+  stato?: string | null;
   /** @nullable */
   importo?: number | null;
   archiviato: boolean;
@@ -392,6 +422,12 @@ export interface UpdateContrattoBody {
   tipo?: string | null;
   /** @nullable */
   dataContratto?: string | null;
+  /** @nullable */
+  dataInizio?: string | null;
+  /** @nullable */
+  dataFine?: string | null;
+  /** @nullable */
+  stato?: string | null;
   /** @nullable */
   importo?: number | null;
   /** @nullable */

@@ -15,6 +15,9 @@ export const contrattiTable = pgTable("contratti", {
   numero: text("numero").notNull(),
   tipo: text("tipo").notNull(), // vendita | noleggio | leasing | permuta
   dataContratto: text("data_contratto").notNull(), // YYYY-MM-DD
+  dataInizio: text("data_inizio"),   // YYYY-MM-DD — per noleggio/leasing
+  dataFine: text("data_fine"),       // YYYY-MM-DD — per noleggio/leasing
+  stato: text("stato"),              // attiva | in_corso | completata | annullata
   importo: numeric("importo", { precision: 10, scale: 2 }),
   archiviato: boolean("archiviato").notNull().default(false),
   note: text("note"),

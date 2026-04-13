@@ -12,7 +12,6 @@ import Login from "@/pages/login";
 import Dashboard from "@/pages/dashboard";
 import Inventario from "@/pages/inventario";
 import Calendario from "@/pages/calendario";
-import Prenotazioni from "@/pages/prenotazioni";
 import Contratti from "@/pages/contratti";
 import Clienti from "@/pages/clienti";
 import StoricoVetture from "@/pages/storico-vetture";
@@ -48,7 +47,6 @@ function AuthGate() {
         <Route path="/dashboard" component={Dashboard} />
         <Route path="/inventario" component={Inventario} />
         <Route path="/calendario" component={Calendario} />
-        <Route path="/prenotazioni" component={Prenotazioni} />
         <Route path="/contratti" component={Contratti} />
         <Route path="/clienti" component={Clienti} />
         <Route path="/storico-vetture" component={StoricoVetture} />

@@ -20,6 +20,12 @@ export interface UpdateContrattoBody {
   /** @nullable */
   dataContratto?: string | null;
   /** @nullable */
+  dataInizio?: string | null;
+  /** @nullable */
+  dataFine?: string | null;
+  /** @nullable */
+  stato?: string | null;
+  /** @nullable */
   importo?: number | null;
   /** @nullable */
   archiviato?: boolean | null;

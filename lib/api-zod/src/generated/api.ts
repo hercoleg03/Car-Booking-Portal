@@ -229,12 +229,17 @@ export const GetVetturaStoricoResponse = zod.object({
       id: zod.number(),
       vetturaId: zod.number(),
       clienteId: zod.number().nullish(),
-      prenotazioneId: zod.number().nullish(),
       nomeLibero: zod.string().nullish(),
       cognomeLibero: zod.string().nullish(),
       numero: zod.string(),
       tipo: zod.string().describe("vendita | noleggio | leasing | permuta"),
       dataContratto: zod.coerce.date(),
+      dataInizio: zod.coerce.date().nullish(),
+      dataFine: zod.coerce.date().nullish(),
+      stato: zod
+        .string()
+        .nullish()
+        .describe("attiva | in_corso | completata | annullata"),
       importo: zod.number().nullish(),
       archiviato: zod.boolean(),
       note: zod.string().nullish(),
@@ -258,7 +263,7 @@ export const GetVetturaStoricoResponse = zod.object({
         updatedAt: zod.coerce.date(),
       }),
       cliente: zod.object({
-        id: zod.number(),
+        id: zod.number().nullish(),
         nome: zod.string(),
         cognome: zod.string(),
         email: zod.string().nullish(),
@@ -266,10 +271,6 @@ export const GetVetturaStoricoResponse = zod.object({
         codiceFiscale: zod.string().nullish(),
         indirizzo: zod.string().nullish(),
         note: zod.string().nullish(),
-        etichetta: zod
-          .string()
-          .nullish()
-          .describe("affidabile | da_monitorare | problematico"),
         createdAt: zod.coerce.date(),
         updatedAt: zod.coerce.date(),
       }),
@@ -671,12 +672,17 @@ export const GetClienteStoricoResponse = zod.object({
       id: zod.number(),
       vetturaId: zod.number(),
       clienteId: zod.number().nullish(),
-      prenotazioneId: zod.number().nullish(),
       nomeLibero: zod.string().nullish(),
       cognomeLibero: zod.string().nullish(),
       numero: zod.string(),
       tipo: zod.string().describe("vendita | noleggio | leasing | permuta"),
       dataContratto: zod.coerce.date(),
+      dataInizio: zod.coerce.date().nullish(),
+      dataFine: zod.coerce.date().nullish(),
+      stato: zod
+        .string()
+        .nullish()
+        .describe("attiva | in_corso | completata | annullata"),
       importo: zod.number().nullish(),
       archiviato: zod.boolean(),
       note: zod.string().nullish(),
@@ -700,7 +706,7 @@ export const GetClienteStoricoResponse = zod.object({
         updatedAt: zod.coerce.date(),
       }),
       cliente: zod.object({
-        id: zod.number(),
+        id: zod.number().nullish(),
         nome: zod.string(),
         cognome: zod.string(),
         email: zod.string().nullish(),
@@ -708,10 +714,6 @@ export const GetClienteStoricoResponse = zod.object({
         codiceFiscale: zod.string().nullish(),
         indirizzo: zod.string().nullish(),
         note: zod.string().nullish(),
-        etichetta: zod
-          .string()
-          .nullish()
-          .describe("affidabile | da_monitorare | problematico"),
         createdAt: zod.coerce.date(),
         updatedAt: zod.coerce.date(),
       }),
@@ -824,12 +826,17 @@ export const GetClienteProfiloResponse = zod.object({
       id: zod.number(),
       vetturaId: zod.number(),
       clienteId: zod.number().nullish(),
-      prenotazioneId: zod.number().nullish(),
       nomeLibero: zod.string().nullish(),
       cognomeLibero: zod.string().nullish(),
       numero: zod.string(),
       tipo: zod.string().describe("vendita | noleggio | leasing | permuta"),
       dataContratto: zod.coerce.date(),
+      dataInizio: zod.coerce.date().nullish(),
+      dataFine: zod.coerce.date().nullish(),
+      stato: zod
+        .string()
+        .nullish()
+        .describe("attiva | in_corso | completata | annullata"),
       importo: zod.number().nullish(),
       archiviato: zod.boolean(),
       note: zod.string().nullish(),
@@ -853,7 +860,7 @@ export const GetClienteProfiloResponse = zod.object({
         updatedAt: zod.coerce.date(),
       }),
       cliente: zod.object({
-        id: zod.number(),
+        id: zod.number().nullish(),
         nome: zod.string(),
         cognome: zod.string(),
         email: zod.string().nullish(),
@@ -861,10 +868,6 @@ export const GetClienteProfiloResponse = zod.object({
         codiceFiscale: zod.string().nullish(),
         indirizzo: zod.string().nullish(),
         note: zod.string().nullish(),
-        etichetta: zod
-          .string()
-          .nullish()
-          .describe("affidabile | da_monitorare | problematico"),
         createdAt: zod.coerce.date(),
         updatedAt: zod.coerce.date(),
       }),
@@ -1166,12 +1169,17 @@ export const ListContrattiResponseItem = zod.object({
   id: zod.number(),
   vetturaId: zod.number(),
   clienteId: zod.number().nullish(),
-  prenotazioneId: zod.number().nullish(),
   nomeLibero: zod.string().nullish(),
   cognomeLibero: zod.string().nullish(),
   numero: zod.string(),
   tipo: zod.string().describe("vendita | noleggio | leasing | permuta"),
   dataContratto: zod.coerce.date(),
+  dataInizio: zod.coerce.date().nullish(),
+  dataFine: zod.coerce.date().nullish(),
+  stato: zod
+    .string()
+    .nullish()
+    .describe("attiva | in_corso | completata | annullata"),
   importo: zod.number().nullish(),
   archiviato: zod.boolean(),
   note: zod.string().nullish(),
@@ -1195,7 +1203,7 @@ export const ListContrattiResponseItem = zod.object({
     updatedAt: zod.coerce.date(),
   }),
   cliente: zod.object({
-    id: zod.number(),
+    id: zod.number().nullish(),
     nome: zod.string(),
     cognome: zod.string(),
     email: zod.string().nullish(),
@@ -1203,10 +1211,6 @@ export const ListContrattiResponseItem = zod.object({
     codiceFiscale: zod.string().nullish(),
     indirizzo: zod.string().nullish(),
     note: zod.string().nullish(),
-    etichetta: zod
-      .string()
-      .nullish()
-      .describe("affidabile | da_monitorare | problematico"),
     createdAt: zod.coerce.date(),
     updatedAt: zod.coerce.date(),
   }),
@@ -1221,12 +1225,14 @@ export const ListContrattiResponse = zod.array(ListContrattiResponseItem);
 export const CreateContrattoBody = zod.object({
   vetturaId: zod.number(),
   clienteId: zod.number().nullish(),
-  prenotazioneId: zod.number().nullish(),
   nomeLibero: zod.string().nullish(),
   cognomeLibero: zod.string().nullish(),
   numero: zod.string(),
   tipo: zod.string(),
   dataContratto: zod.coerce.date(),
+  dataInizio: zod.coerce.date().nullish(),
+  dataFine: zod.coerce.date().nullish(),
+  stato: zod.string().nullish(),
   importo: zod.number().nullish(),
   archiviato: zod.boolean(),
   note: zod.string().nullish(),
@@ -1243,12 +1249,17 @@ export const GetContrattoResponse = zod.object({
   id: zod.number(),
   vetturaId: zod.number(),
   clienteId: zod.number().nullish(),
-  prenotazioneId: zod.number().nullish(),
   nomeLibero: zod.string().nullish(),
   cognomeLibero: zod.string().nullish(),
   numero: zod.string(),
   tipo: zod.string().describe("vendita | noleggio | leasing | permuta"),
   dataContratto: zod.coerce.date(),
+  dataInizio: zod.coerce.date().nullish(),
+  dataFine: zod.coerce.date().nullish(),
+  stato: zod
+    .string()
+    .nullish()
+    .describe("attiva | in_corso | completata | annullata"),
   importo: zod.number().nullish(),
   archiviato: zod.boolean(),
   note: zod.string().nullish(),
@@ -1272,7 +1283,7 @@ export const GetContrattoResponse = zod.object({
     updatedAt: zod.coerce.date(),
   }),
   cliente: zod.object({
-    id: zod.number(),
+    id: zod.number().nullish(),
     nome: zod.string(),
     cognome: zod.string(),
     email: zod.string().nullish(),
@@ -1280,10 +1291,6 @@ export const GetContrattoResponse = zod.object({
     codiceFiscale: zod.string().nullish(),
     indirizzo: zod.string().nullish(),
     note: zod.string().nullish(),
-    etichetta: zod
-      .string()
-      .nullish()
-      .describe("affidabile | da_monitorare | problematico"),
     createdAt: zod.coerce.date(),
     updatedAt: zod.coerce.date(),
   }),
@@ -1305,6 +1312,9 @@ export const UpdateContrattoBody = zod.object({
   numero: zod.string().nullish(),
   tipo: zod.string().nullish(),
   dataContratto: zod.string().nullish(),
+  dataInizio: zod.string().nullish(),
+  dataFine: zod.string().nullish(),
+  stato: zod.string().nullish(),
   importo: zod.number().nullish(),
   archiviato: zod.boolean().nullish(),
   note: zod.string().nullish(),
@@ -1314,12 +1324,17 @@ export const UpdateContrattoResponse = zod.object({
   id: zod.number(),
   vetturaId: zod.number(),
   clienteId: zod.number().nullish(),
-  prenotazioneId: zod.number().nullish(),
   nomeLibero: zod.string().nullish(),
   cognomeLibero: zod.string().nullish(),
   numero: zod.string(),
   tipo: zod.string().describe("vendita | noleggio | leasing | permuta"),
   dataContratto: zod.coerce.date(),
+  dataInizio: zod.coerce.date().nullish(),
+  dataFine: zod.coerce.date().nullish(),
+  stato: zod
+    .string()
+    .nullish()
+    .describe("attiva | in_corso | completata | annullata"),
   importo: zod.number().nullish(),
   archiviato: zod.boolean(),
   note: zod.string().nullish(),
@@ -1343,7 +1358,7 @@ export const UpdateContrattoResponse = zod.object({
     updatedAt: zod.coerce.date(),
   }),
   cliente: zod.object({
-    id: zod.number(),
+    id: zod.number().nullish(),
     nome: zod.string(),
     cognome: zod.string(),
     email: zod.string().nullish(),
@@ -1351,10 +1366,6 @@ export const UpdateContrattoResponse = zod.object({
     codiceFiscale: zod.string().nullish(),
     indirizzo: zod.string().nullish(),
     note: zod.string().nullish(),
-    etichetta: zod
-      .string()
-      .nullish()
-      .describe("affidabile | da_monitorare | problematico"),
     createdAt: zod.coerce.date(),
     updatedAt: zod.coerce.date(),
   }),
