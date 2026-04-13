@@ -1050,7 +1050,11 @@ components:
         vetturaId:
           type: integer
         clienteId:
-          type: integer
+          type: ["integer", "null"]
+        nomeLibero:
+          type: ["string", "null"]
+        cognomeLibero:
+          type: ["string", "null"]
         dataInizio:
           type: string
           format: date
@@ -1086,7 +1090,37 @@ components:
         vettura:
           $ref: "#/components/schemas/Vettura"
         cliente:
-          $ref: "#/components/schemas/Cliente"
+          type: object
+          properties:
+            id:
+              type: ["integer", "null"]
+            nome:
+              type: string
+            cognome:
+              type: string
+            email:
+              type: ["string", "null"]
+            telefono:
+              type: ["string", "null"]
+            codiceFiscale:
+              type: ["string", "null"]
+            indirizzo:
+              type: ["string", "null"]
+            note:
+              type: ["string", "null"]
+            etichetta:
+              type: ["string", "null"]
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
+          required:
+            - nome
+            - cognome
+            - createdAt
+            - updatedAt
         createdAt:
           type: string
           format: date-time
@@ -1096,7 +1130,6 @@ components:
       required:
         - id
         - vetturaId
-        - clienteId
         - dataInizio
         - dataFine
         - stato
@@ -1111,7 +1144,11 @@ components:
         vetturaId:
           type: integer
         clienteId:
-          type: integer
+          type: ["integer", "null"]
+        nomeLibero:
+          type: ["string", "null"]
+        cognomeLibero:
+          type: ["string", "null"]
         dataInizio:
           type: string
           format: date
@@ -1144,7 +1181,6 @@ components:
           type: ["number", "null"]
       required:
         - vetturaId
-        - clienteId
         - dataInizio
         - dataFine
         - stato
@@ -1156,6 +1192,10 @@ components:
           type: ["integer", "null"]
         clienteId:
           type: ["integer", "null"]
+        nomeLibero:
+          type: ["string", "null"]
+        cognomeLibero:
+          type: ["string", "null"]
         dataInizio:
           type: ["string", "null"]
         dataFine:

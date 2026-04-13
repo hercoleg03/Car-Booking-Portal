@@ -34,6 +34,7 @@ export * from "./listVettureParams";
 export * from "./manutenzione";
 export * from "./prenotazione";
 export * from "./prenotazioneCalendario";
+export * from "./prenotazioneCliente";
 export * from "./statoCount";
 export * from "./updateClienteBody";
 export * from "./updateClienteEtichettaBody";

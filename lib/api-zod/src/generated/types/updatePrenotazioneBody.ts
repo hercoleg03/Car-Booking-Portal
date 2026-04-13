@@ -12,6 +12,10 @@ export interface UpdatePrenotazioneBody {
   /** @nullable */
   clienteId?: number | null;
   /** @nullable */
+  nomeLibero?: string | null;
+  /** @nullable */
+  cognomeLibero?: string | null;
+  /** @nullable */
   dataInizio?: string | null;
   /** @nullable */
   dataFine?: string | null;

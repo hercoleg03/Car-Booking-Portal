@@ -5,13 +5,18 @@
  * API specification for Gestione Prenotazioni Concessionaria
  * OpenAPI spec version: 0.1.0
  */
-import type { Cliente } from "./cliente";
+import type { PrenotazioneCliente } from "./prenotazioneCliente";
 import type { Vettura } from "./vettura";
 
 export interface Prenotazione {
   id: number;
   vetturaId: number;
-  clienteId: number;
+  /** @nullable */
+  clienteId?: number | null;
+  /** @nullable */
+  nomeLibero?: string | null;
+  /** @nullable */
+  cognomeLibero?: string | null;
   dataInizio: Date;
   dataFine: Date;
   /** attiva | completata | annullata | in_corso */
@@ -39,7 +44,7 @@ export interface Prenotazione {
   /** @nullable */
   prezzoTotale?: number | null;
   vettura: Vettura;
-  cliente: Cliente;
+  cliente: PrenotazioneCliente;
   createdAt: Date;
   updatedAt: Date;
 }

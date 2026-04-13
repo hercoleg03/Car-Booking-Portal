@@ -8,7 +8,12 @@
 
 export interface CreatePrenotazioneBody {
   vetturaId: number;
-  clienteId: number;
+  /** @nullable */
+  clienteId?: number | null;
+  /** @nullable */
+  nomeLibero?: string | null;
+  /** @nullable */
+  cognomeLibero?: string | null;
   dataInizio: Date;
   dataFine: Date;
   stato: string;
