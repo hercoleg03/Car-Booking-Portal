@@ -1,4 +1,4 @@
-import { Router, type IRouter } from "express";
+import { Router, type IRouter, type Request, type Response } from "express";
 import { eq, and, type SQL } from "drizzle-orm";
 import { db, vettureTable, prenotazioniTable, contrattiTable, clientiTable } from "@workspace/db";
 import {
@@ -19,7 +19,11 @@ import path from "path";
 import fs from "fs";
 
 const uploadsDir = path.join(process.cwd(), "uploads", "vetture");
-fs.mkdirSync(uploadsDir, { recursive: true });
+try {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+} catch (e) {
+  console.error("Impossibile creare cartella uploads:", e);
+}
 
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => cb(null, uploadsDir),
@@ -36,6 +40,15 @@ const upload = multer({
     else cb(new Error("Solo file immagine sono ammessi"));
   },
 });
+
+function runUpload(req: Request, res: Response): Promise<void> {
+  return new Promise((resolve, reject) => {
+    upload.array("foto", 5)(req, res, (err) => {
+      if (err) reject(err);
+      else resolve();
+    });
+  });
+}
 
 const router: IRouter = Router();
 
@@ -281,39 +294,52 @@ router.get("/vetture/:id/storico", async (req, res): Promise<void> => {
   }));
 });
 
-router.post("/vetture/:id/foto", upload.array("foto", 5), async (req, res): Promise<void> => {
+router.post("/vetture/:id/foto", async (req, res): Promise<void> => {
+  try {
+    await runUpload(req, res);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "Errore upload";
+    res.status(400).json({ error: msg });
+    return;
+  }
+
   const params = GetVetturaParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
   }
 
-  const [vettura] = await db.select().from(vettureTable).where(eq(vettureTable.id, params.data.id));
-  if (!vettura) {
-    res.status(404).json({ error: "Vettura non trovata" });
-    return;
+  try {
+    const [vettura] = await db.select().from(vettureTable).where(eq(vettureTable.id, params.data.id));
+    if (!vettura) {
+      res.status(404).json({ error: "Vettura non trovata" });
+      return;
+    }
+
+    const files = req.files as Express.Multer.File[];
+    if (!files || files.length === 0) {
+      res.status(400).json({ error: "Nessun file caricato" });
+      return;
+    }
+
+    const nuoveFoto = files.map(f => `/api/uploads/vetture/${f.filename}`);
+    const fotoPrecedenti = (vettura.foto as string[]) ?? [];
+    const fotoAggiornate = [...fotoPrecedenti, ...nuoveFoto];
+
+    const [updated] = await db
+      .update(vettureTable)
+      .set({ foto: fotoAggiornate })
+      .where(eq(vettureTable.id, params.data.id))
+      .returning();
+
+    res.json({
+      foto: updated.foto,
+      message: `${files.length} foto caricate con successo`,
+    });
+  } catch (err) {
+    console.error("Errore foto:", err);
+    res.status(500).json({ error: "Errore interno durante il salvataggio delle foto" });
   }
-
-  const files = req.files as Express.Multer.File[];
-  if (!files || files.length === 0) {
-    res.status(400).json({ error: "Nessun file caricato" });
-    return;
-  }
-
-  const nuoveFoto = files.map(f => `/api/uploads/vetture/${f.filename}`);
-  const fotoPrecedenti = (vettura.foto as string[]) ?? [];
-  const fotoAggiornate = [...fotoPrecedenti, ...nuoveFoto];
-
-  const [updated] = await db
-    .update(vettureTable)
-    .set({ foto: fotoAggiornate })
-    .where(eq(vettureTable.id, params.data.id))
-    .returning();
-
-  res.json({
-    foto: updated.foto,
-    message: `${files.length} foto caricate con successo`,
-  });
 });
 
 router.delete("/vetture/:id/foto/:index", async (req, res): Promise<void> => {
