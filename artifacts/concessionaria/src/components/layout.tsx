@@ -3,7 +3,7 @@ import { Link, useLocation } from "wouter";
 import {
   LayoutDashboard, Car, Calendar, ClipboardList, FileText, Users,
   History, Wrench, LogOut, Sun, Moon, Search, GanttChart, BarChart2,
-  GripVertical, Menu,
+  GripVertical, Menu, FileBadge,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -32,11 +32,12 @@ const DEFAULT_NAV_ITEMS = [
   { href: "/manutenzioni",   label: "Manutenzioni",    icon: "Wrench",          match: ["/manutenzioni"] },
   { href: "/timeline",       label: "Timeline Flotta", icon: "GanttChart",      match: ["/timeline"] },
   { href: "/report",         label: "Report",          icon: "BarChart2",       match: ["/report"] },
+  { href: "/documento-vendita", label: "Documento Vendita", icon: "FileBadge",   match: ["/documento-vendita"] },
 ];
 
 const ICON_MAP: Record<string, React.ElementType> = {
   LayoutDashboard, Car, Calendar, ClipboardList,
-  FileText, Users, History, Wrench, GanttChart, BarChart2,
+  FileText, Users, History, Wrench, GanttChart, BarChart2, FileBadge,
 };
 
 const LS_KEY = "concessionaria_nav_order";
