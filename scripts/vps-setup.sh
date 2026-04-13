@@ -141,8 +141,11 @@ server {
     listen 80;
     server_name ${SERVER_HOST};
 
-    root ${APP_DIR}/artifacts/concessionaria/dist;
+    root ${APP_DIR}/artifacts/concessionaria/dist/public;
     index index.html;
+
+    # Limite dimensione upload foto (20MB)
+    client_max_body_size 20M;
 
     # Frontend SPA
     location / {
@@ -160,13 +163,7 @@ server {
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto \$scheme;
         proxy_cache_bypass \$http_upgrade;
-    }
-
-    # Upload file statici (foto vetture)
-    location /uploads/ {
-        alias ${APP_DIR}/artifacts/api-server/uploads/;
-        expires 30d;
-        add_header Cache-Control "public, immutable";
+        client_max_body_size 20M;
     }
 
     # Compressione
