@@ -1,6 +1,7 @@
-import { useState } from "react";
-import { useListContratti, useCreateContratto, getListContrattiQueryKey, useListVetture, useListClienti, useUpdateContratto } from "@workspace/api-client-react";
-import { Plus, Search, FileText, CheckCircle2, Archive, Handshake, Download } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useSearch } from "wouter";
+import { useListContratti, useCreateContratto, getListContrattiQueryKey, useListVetture, useListClienti, useUpdateContratto, useListPrenotazioni } from "@workspace/api-client-react";
+import { Plus, Search, FileText, CheckCircle2, Archive, Handshake, Download, CalendarClock } from "lucide-react";
 import { generaContrattoNoleggioPDF } from "@/lib/genera-contratto-pdf";
 import { useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -19,6 +20,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useToast } from "@/hooks/use-toast";
 
 const contrattoSchema = z.object({
+  prenotazioneId: z.coerce.number().optional().nullable(),
   vetturaId: z.coerce.number().min(1, "Vettura richiesta"),
   clienteId: z.coerce.number().min(1, "Cliente richiesto"),
   numero: z.string().min(1, "Numero contratto richiesto"),
@@ -33,6 +35,7 @@ type ContrattoFormValues = z.infer<typeof contrattoSchema>;
 export default function Contratti() {
   const [archiviato, setArchiviato] = useState<string>("false");
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const search = useSearch();
 
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -42,6 +45,7 @@ export default function Contratti() {
   });
   const { data: vetture } = useListVetture();
   const { data: clienti } = useListClienti();
+  const { data: prenotazioni } = useListPrenotazioni({});
   
   const createContratto = useCreateContratto();
   const updateContratto = useUpdateContratto();
@@ -49,19 +53,47 @@ export default function Contratti() {
   const form = useForm<ContrattoFormValues>({
     resolver: zodResolver(contrattoSchema),
     defaultValues: {
+      prenotazioneId: null,
       vetturaId: 0,
       clienteId: 0,
       numero: "",
-      tipo: "vendita",
+      tipo: "noleggio",
       dataContratto: new Date().toISOString().split("T")[0],
       importo: 0,
       note: ""
     }
   });
 
+  useEffect(() => {
+    if (!prenotazioni) return;
+    const params = new URLSearchParams(search);
+    const pid = params.get("prenotazioneId");
+    if (pid) {
+      setIsAddOpen(true);
+      handlePrenotazioneSelect(pid);
+    }
+  }, [prenotazioni, search]);
+
+  function handlePrenotazioneSelect(idStr: string) {
+    const id = parseInt(idStr);
+    const p = prenotazioni?.find((x: any) => x.id === id);
+    if (!p) return;
+    form.setValue("prenotazioneId", id);
+    if (p.vetturaId) form.setValue("vetturaId", p.vetturaId);
+    if (p.clienteId) form.setValue("clienteId", p.clienteId);
+    form.setValue("tipo", "noleggio");
+    if (p.prezzoTotale) form.setValue("importo", p.prezzoTotale);
+    form.setValue("dataContratto", (p.dataInizio as string).split("T")[0]);
+  }
+
   function onSubmit(data: ContrattoFormValues) {
     createContratto.mutate({ 
-      data: { ...data, archiviato: false, dataContratto: new Date(data.dataContratto).toISOString() } 
+      data: { 
+        ...data, 
+        archiviato: false, 
+        dataContratto: new Date(data.dataContratto).toISOString(),
+        prenotazioneId: data.prenotazioneId ?? null,
+      } 
     }, {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getListContrattiQueryKey() });
@@ -103,6 +135,29 @@ export default function Contratti() {
             </DialogHeader>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+
+                {/* Collega prenotazione */}
+                {prenotazioni && prenotazioni.length > 0 && (
+                  <div className="rounded-lg bg-indigo-500/5 border border-indigo-500/20 p-3">
+                    <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 mb-2 flex items-center gap-1.5">
+                      <CalendarClock className="w-3.5 h-3.5" /> Collega a una prenotazione (facoltativo)
+                    </p>
+                    <Select onValueChange={handlePrenotazioneSelect}>
+                      <SelectTrigger className="h-8 text-xs">
+                        <SelectValue placeholder="Seleziona prenotazione per auto-compilare..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {prenotazioni?.map((p: any) => (
+                          <SelectItem key={p.id} value={String(p.id)}>
+                            {p.vettura?.marca} {p.vettura?.modello} — {p.cliente?.cognome} {p.cliente?.nome} — {new Date(p.dataInizio).toLocaleDateString("it-IT")} → {new Date(p.dataFine).toLocaleDateString("it-IT")}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-[10px] text-muted-foreground mt-1.5">Selezionando una prenotazione verranno auto-compilati cliente, vettura, importo e data.</p>
+                  </div>
+                )}
+
                 <FormField control={form.control} name="numero" render={({ field }) => (
                   <FormItem><FormLabel>Numero Pratica / Contratto</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
@@ -213,6 +268,16 @@ export default function Contratti() {
                       <Badge variant="secondary" className="capitalize text-xs py-0 h-5">{c.tipo}</Badge>
                       {format(new Date(c.dataContratto), "dd/MM/yyyy")}
                     </div>
+                    {c.prenotazioneId && (() => {
+                      const p = prenotazioni?.find((x: any) => x.id === c.prenotazioneId);
+                      if (!p) return null;
+                      return (
+                        <div className="flex items-center gap-1 mt-1 text-[11px] text-indigo-600 dark:text-indigo-400">
+                          <CalendarClock className="w-3 h-3" />
+                          {format(new Date((p as any).dataInizio), "dd/MM/yy")} → {format(new Date((p as any).dataFine), "dd/MM/yy")}
+                        </div>
+                      );
+                    })()}
                   </TableCell>
                   <TableCell>
                     <div className="font-medium">{c.cliente.nome} {c.cliente.cognome}</div>
@@ -238,7 +303,14 @@ export default function Contratti() {
                         variant="ghost"
                         size="sm"
                         className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-500/10 gap-1.5"
-                        onClick={() => generaContrattoNoleggioPDF(c as any)}
+                        onClick={() => {
+                          const p = c.prenotazioneId ? prenotazioni?.find((x: any) => x.id === c.prenotazioneId) : null;
+                          generaContrattoNoleggioPDF({ 
+                            ...c as any, 
+                            dataInizio: (p as any)?.dataInizio ?? null,
+                            dataFine: (p as any)?.dataFine ?? null,
+                          });
+                        }}
                         title="Scarica contratto PDF"
                       >
                         <Download className="w-4 h-4" />

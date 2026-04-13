@@ -6,6 +6,9 @@ interface ContrattoData {
   dataContratto: string;
   importo: number | null;
   note: string | null;
+  prenotazioneId?: number | null;
+  dataInizio?: string | null;
+  dataFine?: string | null;
   cliente: {
     nome: string;
     cognome: string;
@@ -161,9 +164,12 @@ export function generaContrattoNoleggioPDF(c: ContrattoData) {
     ["Il veicolo è consegnato con una ruota di scorta ovvero kit di riparazione, autoradio, copia carta di circolazione. L'autovettura viene consegnata con il carburante sopra indicato, e dovrà essere restituita con la medesima quantità. Al rientro verranno addebitati eventuali litri mancanti oltre ad un supplemento per il mancato rifornimento pari ad euro 30."]
   );
 
+  const dataInizioStr = c.dataInizio ? formatDate(c.dataInizio.split("T")[0]) : "___/___/______";
+  const dataFineStr = c.dataFine ? formatDate(c.dataFine.split("T")[0]) : "___/___/______";
+
   articolo(3, "Inizio, consegna e restituzione del veicolo",
     [
-      `Il noleggio ha inizio il: ${blank("data")}  alle ore: ______  ed ha termine il giorno: ${blank("data")}  alle ore: ______.`,
+      `Il noleggio ha inizio il: ${dataInizioStr}  alle ore: ______  ed ha termine il giorno: ${dataFineStr}  alle ore: ______.`,
       "Al termine del periodo di noleggio il bene deve essere messo a disposizione del noleggiatore. In caso di ritardo nella consegna del bene il cliente si impegna a pagare euro 100 per ogni giorno di ritardo al fine anche di compensare la mancata disponibilità a noleggiare nuovamente l'autovettura non riconsegnata.",
     ]
   );

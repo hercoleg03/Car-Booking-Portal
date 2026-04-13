@@ -5,8 +5,9 @@ import {
 } from "@workspace/api-client-react";
 import {
   Plus, Search, Calendar as CalendarIcon, XCircle, Clock, Pencil, Trash2,
-  CheckCircle2, Calculator, ChevronRight, AlertTriangle, Car
+  CheckCircle2, Calculator, ChevronRight, AlertTriangle, Car, FilePlus,
 } from "lucide-react";
+import { useLocation } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
 import { format, differenceInDays, parseISO } from "date-fns";
 
@@ -122,6 +123,7 @@ export default function Prenotazioni() {
 
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const [, navigate] = useLocation();
 
   const { data: prenotazioni, isLoading } = useListPrenotazioni({ stato: stato !== "all" ? stato : undefined });
   const { data: vetture } = useListVetture();
@@ -374,6 +376,16 @@ export default function Prenotazioni() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 text-xs text-indigo-600 hover:text-indigo-700 hover:bg-indigo-500/10 gap-1 px-2"
+                          title="Crea contratto da questa prenotazione"
+                          onClick={() => navigate(`/contratti?prenotazioneId=${p.id}`)}
+                        >
+                          <FilePlus className="w-3.5 h-3.5" />
+                          Contratto
+                        </Button>
                         <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground" title="Modifica" onClick={() => openEdit(p)}>
                           <Pencil className="w-3.5 h-3.5" />
                         </Button>
